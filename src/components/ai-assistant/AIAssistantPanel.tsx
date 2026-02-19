@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Minus, Send, MessageCircle, Square, AlertCircle, ExternalLink } from "lucide-react";
+import { X, Minus, Send, MessageCircle, Square, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation, Link } from "react-router-dom";
-import { queryFinBox, isAIConfigured, buildSystemPrompt, getAIConfig } from "@/lib/ai-client";
+import { queryFinBox, isAIConfigured } from "@/lib/ai-client";
 import { toast } from "@/hooks/use-toast";
 
 interface Message {
@@ -84,10 +84,7 @@ export function AIAssistantPanel({
       });
 
       if (result.success) {
-        const config = getAIConfig();
-        const systemPrompt = buildSystemPrompt(location.pathname, config);
-
-        // Build response with system prompt context
+        // Build response
         let response = result.data.response;
 
         // Add sources if available
@@ -113,9 +110,10 @@ export function AIAssistantPanel({
       if (err instanceof DOMException && err.name === "AbortError") {
         // User cancelled, ignore
       } else {
+        const errorMsg = err instanceof Error ? err.message : "Failed to get response from FinBox AI";
         toast({
           title: "AI Error",
-          description: "Failed to get response from FinBox AI",
+          description: errorMsg,
           variant: "destructive"
         });
       }

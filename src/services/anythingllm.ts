@@ -161,6 +161,16 @@ class AnythingLLMService {
     let workspace = await this.getWorkspace(slug);
     if (!workspace) {
       workspace = await this.createWorkspace(name, slug);
+
+      // Configure with Ollama settings
+      await this.request(`/api/v1/workspace/${slug}/update`, {
+        method: "POST",
+        body: JSON.stringify({
+          chatProvider: "ollama",
+          chatModel: "llama3.1:8b",
+          openAiTemp: 0.7,
+        }),
+      });
     }
 
     return workspace;
