@@ -1,0 +1,37 @@
+# Training Documents Folder
+
+Place your IFA training PDF documents in this folder.
+
+## Recommended Documents:
+
+From ~/Desktop/FinBox Training folder:
+1. Immediate_financing_arrangement_IFAANG.pdf
+2. IFA- $100k Example 35.pdf
+3. F13_1167A_Balance_Sheet_Strenghtening_With_Permanent_Life_Insurance.pdf
+4. Application EA2266687901.pdf
+
+Additional recommended documents:
+- Manulife Par product guides
+- Equitable EquiPar documentation
+- BCFSA compliance guidelines
+- Canadian tax planning resources (CDA, NCPI, ACB)
+
+## Syncing Documents:
+
+After adding PDFs to this folder:
+1. Run: npm run sync-training-docs
+   OR
+2. Use the "Sync Core Documents" button in FinBox Settings
+
+All PDFs in this folder will be uploaded to the "Finbox-Core" workspace
+in AnythingLLM and made available to all advisors.
+
+## File Naming:
+
+- Use descriptive names: Manulife_Par_IFA_Guide_2024.pdf
+- Avoid spaces: use underscores or hyphens
+- Mark mock/test files: [MOCK]_Example_Doc.pdf
+
+---
+
+This placeholder file can be deleted once real training PDFs are added.

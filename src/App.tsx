@@ -12,6 +12,7 @@ import { AIAssistantPanel } from "@/components/ai-assistant/AIAssistantPanel";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { PinScreen } from "@/components/onboarding/PinScreen";
 import { MessageCircle } from "lucide-react";
+import { ensureAdvisorWorkspace } from "@/lib/ai-client";
 import Index from "./pages/Index";
 import ClientDiscovery from "./pages/ClientDiscovery";
 import HandoffPackage from "./pages/HandoffPackage";
@@ -21,6 +22,7 @@ import CaseDetail from "./pages/CaseDetail";
 import Settings from "./pages/Settings";
 import Presentations from "./pages/Presentations";
 import Training from "./pages/Training";
+import DocumentManager from "./pages/DocumentManager";
 import PresentationMode from "./components/presentation/PresentationMode";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +45,15 @@ function AppContent() {
       setGate("pin");
     }
   }, []);
+
+  // Ensure advisor workspace exists when app unlocks
+  useEffect(() => {
+    if (gate === "unlocked") {
+      ensureAdvisorWorkspace().catch(error => {
+        console.error("Failed to create advisor workspace:", error);
+      });
+    }
+  }, [gate]);
 
   if (gate === "loading") return null;
 
@@ -84,6 +95,7 @@ function AppContent() {
                 <Route path="/active-cases/:caseId" element={<CaseDetail />} />
                 <Route path="/new-case" element={<NewCase />} />
                 <Route path="/training" element={<Training />} />
+                <Route path="/documents" element={<DocumentManager />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

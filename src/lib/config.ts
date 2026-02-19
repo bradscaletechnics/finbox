@@ -90,3 +90,17 @@ export function getConfigSource(): {
     citations: import.meta.env.VITE_ANYTHINGLLM_CITATIONS !== undefined ? "env" : "localStorage",
   };
 }
+
+/**
+ * Get training folder path from environment or default
+ */
+export function getTrainingFolderPath(): string {
+  return import.meta.env.VITE_TRAINING_FOLDER_PATH || "./training-docs/core";
+}
+
+/**
+ * Get core workspace slug for training documents
+ */
+export function getCoreWorkspaceSlug(): string {
+  return "finbox-core";
+}

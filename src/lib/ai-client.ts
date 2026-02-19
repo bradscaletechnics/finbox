@@ -5,6 +5,8 @@ import {
   isAnythingLLMConfigured,
   type AnythingLLMConfig,
 } from "./config";
+import { getAdvisorProfile } from "./advisor";
+import { anythingLLM, type QueryResponse } from "@/services/anythingllm";
 
 // Re-export config functions for backwards compatibility
 export type AIConfig = AnythingLLMConfig;
@@ -228,4 +230,46 @@ export async function queryChat(options: {
     }
     return { success: false, error: `AnythingLLM is not reachable. Make sure it's running on ${config.baseUrl}` };
   }
+}
+
+/**
+ * Query FinBox using multi-workspace RAG
+ * Searches both Finbox-Core (training docs) and advisor's personal workspace
+ * @param message - Question to ask
+ * @param pathname - Current page path for context
+ * @returns Query response with sources labeled by workspace
+ */
+export async function queryFinBox(options: {
+  message: string;
+  pathname?: string;
+  signal?: AbortSignal;
+}): Promise<{ success: true; data: QueryResponse } | { success: false; error: string }> {
+  const config = getAIConfig();
+  const { message, signal } = options;
+
+  if (!config.apiKey) {
+    return { success: false, error: "API key not configured. Go to Settings → AI Assistant to set up AnythingLLM." };
+  }
+
+  try {
+    const advisor = getAdvisorProfile();
+    const response = await anythingLLM.queryFinBox(message, advisor.fullName);
+
+    return { success: true, data: response };
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      return { success: false, error: "Request cancelled." };
+    }
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    return { success: false, error: `Query failed: ${errorMessage}` };
+  }
+}
+
+/**
+ * Ensure advisor workspace exists
+ * Call this on login/app startup to create workspace if needed
+ */
+export async function ensureAdvisorWorkspace(): Promise<void> {
+  const advisor = getAdvisorProfile();
+  await anythingLLM.getOrCreateAdvisorWorkspace(advisor.fullName);
 }

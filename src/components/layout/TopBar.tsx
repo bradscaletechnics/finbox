@@ -1,5 +1,5 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { Plus, Settings, LogOut, LayoutGrid, Briefcase, PlayCircle, BookOpen, Flame } from "lucide-react";
+import { Plus, Settings, LogOut, LayoutGrid, Briefcase, PlayCircle, BookOpen, Flame, FileText } from "lucide-react";
 import { FinBoxLogo } from "@/components/ui/FinBoxLogo";
 import { getAdvisorProfile, getAdvisorInitials } from "@/lib/advisor";
 import { useXP } from "@/lib/xp";
@@ -18,6 +18,7 @@ const navItems = [
   { title: "Cases", icon: Briefcase, path: "/active-cases" },
   { title: "Presentations", icon: PlayCircle, path: "/presentations" },
   { title: "Training", icon: BookOpen, path: "/training" },
+  { title: "Documents", icon: FileText, path: "/documents" },
 ];
 
 function XPBar() {

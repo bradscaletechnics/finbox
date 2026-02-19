@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Training documents - exclude proprietary PDFs
+training-docs/core/*.pdf
+!training-docs/core/*[MOCK]*.pdf

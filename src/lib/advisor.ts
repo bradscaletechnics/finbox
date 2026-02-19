@@ -57,3 +57,21 @@ export function saveAdvisorProfile(profile: Partial<AdvisorProfile>): void {
   const updated = { ...current, ...profile };
   localStorage.setItem("finbox_profile", JSON.stringify(updated));
 }
+
+/**
+ * Get advisor's AnythingLLM workspace slug
+ * Format: advisor-firstname-lastname
+ */
+export function getAdvisorWorkspaceSlug(): string {
+  const { fullName } = getAdvisorProfile();
+  return `advisor-${fullName.toLowerCase().replace(/\s+/g, "-")}`;
+}
+
+/**
+ * Get advisor's AnythingLLM workspace name
+ * Format: Advisor-FirstName LastName
+ */
+export function getAdvisorWorkspaceName(): string {
+  const { fullName } = getAdvisorProfile();
+  return `Advisor-${fullName}`;
+}
