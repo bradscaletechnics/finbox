@@ -4,7 +4,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { FinBoxLogo } from "@/components/ui/FinBoxLogo";
 import { TreasureChest3D } from "@/components/ui/TreasureChest3D";
 import { unlockAudio, playChestOpen, playPinDigit, playPinSuccess, playPinError } from "@/lib/sounds";
-import { getAdvisorProfile, isAdmin } from "@/lib/advisor";
 
 interface PinScreenProps {
   onUnlock: () => void;
@@ -16,7 +15,6 @@ export function PinScreen({ onUnlock, onCreateNew }: PinScreenProps) {
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
   const [success, setSuccess] = useState(false);
-  const userIsAdmin = isAdmin();
 
   const handleUnlock = () => {
     const storedPin = localStorage.getItem("finbox_pin");
@@ -104,26 +102,14 @@ export function PinScreen({ onUnlock, onCreateNew }: PinScreenProps) {
           Secure · Offline-First
         </p>
 
-        <div className="mt-4 flex flex-col items-center gap-2">
-          {userIsAdmin && (
-            <button
-              onClick={() => { setSuccess(true); setTimeout(onUnlock, 500); }}
-              className="text-[10px] text-gold/40 hover:text-gold/70 transition-colors underline"
-              title="Admin bypass"
-            >
-              Admin Bypass
-            </button>
-          )}
-
-          {onCreateNew && (
-            <button
-              onClick={onCreateNew}
-              className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors underline"
-            >
-              Create New Advisor Profile
-            </button>
-          )}
-        </div>
+        {onCreateNew && (
+          <button
+            onClick={onCreateNew}
+            className="mt-4 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors underline"
+          >
+            Create New Advisor Profile
+          </button>
+        )}
       </div>
     </div>
   );
