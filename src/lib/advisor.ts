@@ -75,3 +75,29 @@ export function getAdvisorWorkspaceName(): string {
   const { fullName } = getAdvisorProfile();
   return `Advisor-${fullName}`;
 }
+
+/**
+ * Check if current advisor is the admin (first advisor)
+ */
+export function isAdmin(): boolean {
+  try {
+    const adminEmail = localStorage.getItem("finbox_admin");
+    if (!adminEmail) return false;
+
+    const profile = getAdvisorProfile();
+    return profile.email === adminEmail;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Set the first advisor as admin
+ * Should only be called during initial onboarding
+ */
+export function setFirstAdvisorAsAdmin(email: string): void {
+  const existing = localStorage.getItem("finbox_admin");
+  if (!existing) {
+    localStorage.setItem("finbox_admin", email);
+  }
+}

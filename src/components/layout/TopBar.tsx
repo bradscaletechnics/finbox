@@ -99,7 +99,7 @@ export function TopBar({ onSignOut }: { onSignOut?: () => void }) {
   return (
     <header className="z-30 flex h-12 shrink-0 items-center gap-8 bg-background px-6 border-b border-white/[0.04]">
       {/* Logo */}
-      <Link to="/" className="shrink-0">
+      <Link to="/" className="shrink-0" title="FinBox - AI-Powered IFA Advisory">
         <FinBoxLogo size="sm" />
       </Link>
 

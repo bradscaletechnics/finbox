@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Crown } from "lucide-react";
 import type { AdvisorProfile, AdvisorPreferences } from "../OnboardingFlow";
 
 const FOCUS_LABELS: Record<string, string> = {
@@ -15,6 +15,8 @@ interface Props {
 }
 
 export function ReadyStep({ profile, preferences, onComplete }: Props) {
+  const isFirstAdvisor = !localStorage.getItem("finbox_admin");
+
   return (
     <div className="px-8 py-10 flex flex-col items-center text-center">
       {/* Animated checkmark */}
@@ -28,9 +30,16 @@ export function ReadyStep({ profile, preferences, onComplete }: Props) {
       </div>
 
       <h2 className="text-2xl font-bold text-foreground mb-1">You're All Set</h2>
-      <p className="text-muted-foreground text-sm mb-8">
+      <p className="text-muted-foreground text-sm mb-2">
         {profile.fullName || "Advisor"}, your FinBox is configured and ready.
       </p>
+
+      {isFirstAdvisor && (
+        <div className="flex items-center gap-1.5 mb-6 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/30">
+          <Crown className="h-3.5 w-3.5 text-gold" />
+          <span className="text-xs font-semibold text-gold">Admin · First Advisor</span>
+        </div>
+      )}
 
       {/* Summary card */}
       <div className="w-full rounded-lg border border-border p-5 text-left space-y-3 mb-8" style={{ background: "rgba(42,58,78,0.3)" }}>

@@ -4,16 +4,19 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { FinBoxLogo } from "@/components/ui/FinBoxLogo";
 import { TreasureChest3D } from "@/components/ui/TreasureChest3D";
 import { unlockAudio, playChestOpen, playPinDigit, playPinSuccess, playPinError } from "@/lib/sounds";
+import { getAdvisorProfile, isAdmin } from "@/lib/advisor";
 
 interface PinScreenProps {
   onUnlock: () => void;
+  onCreateNew?: () => void;
 }
 
-export function PinScreen({ onUnlock }: PinScreenProps) {
+export function PinScreen({ onUnlock, onCreateNew }: PinScreenProps) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
   const [success, setSuccess] = useState(false);
+  const userIsAdmin = isAdmin();
 
   const handleUnlock = () => {
     const storedPin = localStorage.getItem("finbox_pin");
@@ -101,12 +104,26 @@ export function PinScreen({ onUnlock }: PinScreenProps) {
           Secure · Offline-First
         </p>
 
-        <button
-          onClick={() => { setSuccess(true); setTimeout(onUnlock, 500); }}
-          className="mt-3 text-[10px] text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors underline"
-        >
-          Skip (Admin)
-        </button>
+        <div className="mt-4 flex flex-col items-center gap-2">
+          {userIsAdmin && (
+            <button
+              onClick={() => { setSuccess(true); setTimeout(onUnlock, 500); }}
+              className="text-[10px] text-gold/40 hover:text-gold/70 transition-colors underline"
+              title="Admin bypass"
+            >
+              Admin Bypass
+            </button>
+          )}
+
+          {onCreateNew && (
+            <button
+              onClick={onCreateNew}
+              className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors underline"
+            >
+              Create New Advisor Profile
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

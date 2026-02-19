@@ -13,6 +13,7 @@ import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { PinScreen } from "@/components/onboarding/PinScreen";
 import { MessageCircle } from "lucide-react";
 import { ensureAdvisorWorkspace } from "@/lib/ai-client";
+import { setFirstAdvisorAsAdmin } from "@/lib/advisor";
 import Index from "./pages/Index";
 import ClientDiscovery from "./pages/ClientDiscovery";
 import HandoffPackage from "./pages/HandoffPackage";
@@ -34,6 +35,16 @@ function AppContent() {
   const [aiOpen, setAiOpen] = useState(false);
   const [gate, setGate] = useState<AppGate>("loading");
   const handleLock = useCallback(() => setGate("pin"), []);
+  const handleCreateNew = useCallback(() => {
+    // Clear current advisor data but keep admin record
+    const admin = localStorage.getItem("finbox_admin");
+    localStorage.removeItem("finbox_onboarded");
+    localStorage.removeItem("finbox_pin");
+    localStorage.removeItem("finbox_profile");
+    localStorage.removeItem("finbox_preferences");
+    if (admin) localStorage.setItem("finbox_admin", admin);
+    setGate("onboarding");
+  }, []);
   const isUnlocked = gate === "unlocked";
   const noop = useCallback(() => {}, []);
   useAutoLock(isUnlocked ? handleLock : noop);
@@ -61,6 +72,9 @@ function AppContent() {
     return (
       <OnboardingFlow
         onComplete={(profile, preferences) => {
+          // Set first advisor as admin
+          setFirstAdvisorAsAdmin(profile.email);
+
           localStorage.setItem("finbox_onboarded", "true");
           localStorage.setItem("finbox_pin", preferences.pin);
           localStorage.setItem("finbox_profile", JSON.stringify(profile));
@@ -72,7 +86,12 @@ function AppContent() {
   }
 
   if (gate === "pin") {
-    return <PinScreen onUnlock={() => setGate("unlocked")} />;
+    return (
+      <PinScreen
+        onUnlock={() => setGate("unlocked")}
+        onCreateNew={handleCreateNew}
+      />
+    );
   }
 
   return (
