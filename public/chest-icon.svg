@@ -1,0 +1,60 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Treasure Chest Icon -->
+  <defs>
+    <linearGradient id="wood" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5A3C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5A3A1A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#D4A030;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient glow -->
+  <circle cx="256" cy="256" r="200" fill="url(#glow)" />
+
+  <!-- Chest base -->
+  <rect x="120" y="220" width="272" height="180" rx="12" fill="url(#wood)" stroke="#3D2510" stroke-width="4"/>
+
+  <!-- Dark wood panels -->
+  <rect x="135" y="235" width="242" height="150" rx="6" fill="#3D2510" opacity="0.3"/>
+
+  <!-- Horizontal bands -->
+  <rect x="115" y="260" width="282" height="8" fill="#9A8550" opacity="0.9"/>
+  <rect x="115" y="300" width="282" height="8" fill="#9A8550" opacity="0.9"/>
+  <rect x="115" y="340" width="282" height="8" fill="#9A8550" opacity="0.9"/>
+
+  <!-- Vertical bands -->
+  <rect x="170" y="215" width="8" height="190" fill="#9A8550" opacity="0.9"/>
+  <rect x="334" y="215" width="8" height="190" fill="#9A8550" opacity="0.9"/>
+
+  <!-- Chest lid (curved top) -->
+  <path d="M 120 220 Q 120 140, 256 140 Q 392 140, 392 220 L 392 250 L 120 250 Z"
+        fill="url(#wood)" stroke="#3D2510" stroke-width="4"/>
+
+  <!-- Lid dark panel -->
+  <path d="M 135 235 Q 135 165, 256 165 Q 377 165, 377 235 L 377 250 L 135 250 Z"
+        fill="#3D2510" opacity="0.3"/>
+
+  <!-- Lid bands -->
+  <ellipse cx="256" cy="200" rx="121" ry="40" fill="none" stroke="#9A8550" stroke-width="6" opacity="0.9"/>
+
+  <!-- Lock plate (gold) -->
+  <rect x="236" y="280" width="40" height="50" rx="8" fill="url(#gold)" stroke="#B8860B" stroke-width="2"/>
+  <circle cx="256" cy="305" r="8" fill="#3D2510"/>
+
+  <!-- Shine effect on lock -->
+  <ellipse cx="246" cy="295" rx="8" ry="12" fill="#FFFFFF" opacity="0.4"/>
+
+  <!-- Hinges -->
+  <rect x="375" y="180" width="24" height="16" rx="4" fill="url(#gold)" stroke="#B8860B" stroke-width="2"/>
+  <rect x="113" y="180" width="24" height="16" rx="4" fill="url(#gold)" stroke="#B8860B" stroke-width="2"/>
+  <circle cx="387" cy="188" r="3" fill="#3D2510"/>
+  <circle cx="125" cy="188" r="3" fill="#3D2510"/>
+</svg>
