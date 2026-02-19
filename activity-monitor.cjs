@@ -177,36 +177,146 @@ const server = http.createServer((req, res) => {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
       background: #0a0a0a;
       color: #e0e0e0;
-      padding: 20px;
+      overflow: hidden;
+      height: 100vh;
     }
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
+      padding: 12px 20px;
       box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    h1 { font-size: 24px; margin-bottom: 5px; color: white; }
-    .subtitle { opacity: 0.9; font-size: 14px; color: white; }
-    .container { max-width: 1400px; margin: 0 auto; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h1 { font-size: 18px; color: white; margin: 0; }
+    .subtitle { opacity: 0.9; font-size: 11px; color: white; }
+    .view-toggle {
+      display: flex;
+      gap: 5px;
+      background: rgba(0,0,0,0.2);
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .view-btn {
+      padding: 6px 14px;
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .view-btn.active {
+      background: rgba(255,255,255,0.25);
+      font-weight: 600;
+    }
+    .view-btn:hover:not(.active) {
+      background: rgba(255,255,255,0.1);
+    }
+    .container { height: calc(100vh - 54px); overflow: hidden; }
+    .grid {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 0;
+      height: 100%;
+    }
+    .grid.split-view {
+      grid-template-columns: 300px 1fr 1fr;
+    }
+    .grid.preview-only {
+      grid-template-columns: 1fr;
+    }
     .panel {
       background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 10px;
+      border-right: 1px solid #222;
       padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      overflow-y: auto;
+      height: 100%;
+    }
+    .panel.preview-panel {
+      padding: 0;
+      background: #fff;
+      border-right: none;
     }
     .panel h2 {
-      font-size: 16px;
+      font-size: 14px;
       margin-bottom: 15px;
       color: #667eea;
       border-bottom: 2px solid #667eea;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
+      position: sticky;
+      top: 0;
+      background: #1a1a1a;
+      z-index: 10;
     }
     .activity-list {
-      max-height: 600px;
+      height: calc(50% - 40px);
       overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    .git-files {
+      height: calc(50% - 40px);
+      overflow-y: auto;
+    }
+    #preview-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+    .preview-header {
+      background: #1a1a1a;
+      padding: 10px 15px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+    }
+    .preview-url {
+      flex: 1;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      padding: 6px 10px;
+      border-radius: 4px;
+      color: #888;
+      font-family: monospace;
+    }
+    .refresh-btn {
+      padding: 6px 12px;
+      background: #667eea;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover {
+      background: #5568d3;
+    }
+    .auto-refresh-indicator {
+      font-size: 10px;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .auto-refresh-indicator::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s infinite;
     }
     .activity-item {
       padding: 12px;
@@ -300,36 +410,73 @@ const server = http.createServer((req, res) => {
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
+  <div class="header">
+    <div class="header-left">
       <h1><span class="status-indicator"></span>FinBox Activity Monitor</h1>
-      <div class="subtitle">Real-time tracking of Claude Code's file changes</div>
+      <div class="subtitle">Live preview & real-time file tracking</div>
     </div>
+    <div class="view-toggle">
+      <button class="view-btn" onclick="setView('activity')">Activity</button>
+      <button class="view-btn active" onclick="setView('split')">Split View</button>
+      <button class="view-btn" onclick="setView('preview')">Preview Only</button>
+    </div>
+  </div>
 
-    <div class="grid">
-      <div class="panel">
+  <div class="container">
+    <div class="grid split-view" id="main-grid">
+      <!-- Activity Panel -->
+      <div class="panel" id="activity-panel">
         <h2>Recent Activity</h2>
         <div class="activity-list" id="activities">
           <div class="empty-state">Waiting for file changes...</div>
         </div>
-      </div>
-
-      <div class="panel">
         <h2>Git Status</h2>
         <div class="git-files" id="git-status">
           <div class="empty-state">No changes detected</div>
         </div>
       </div>
+
+      <!-- Live Preview Panel -->
+      <div class="panel preview-panel" id="preview-panel">
+        <div class="preview-header">
+          <div class="preview-url">http://localhost:8080</div>
+          <button class="refresh-btn" onclick="refreshPreview()">↻ Refresh</button>
+          <div class="auto-refresh-indicator">Auto-refresh ON</div>
+        </div>
+        <iframe id="preview-frame" src="http://localhost:8080"></iframe>
+      </div>
+
+      <!-- Split Preview Panel (for split view) -->
+      <div class="panel preview-panel" id="split-preview" style="display: none;">
+        <div class="preview-header">
+          <div class="preview-url">http://localhost:8080</div>
+          <button class="refresh-btn" onclick="refreshPreview()">↻ Refresh</button>
+        </div>
+        <iframe id="split-frame" src="http://localhost:8080"></iframe>
+      </div>
     </div>
   </div>
 
   <script>
+    let lastRefreshTime = Date.now();
+    let currentView = 'split';
+
     // Connect to SSE stream
     const eventSource = new EventSource('/events');
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
       updateActivities(data.activities);
+
+      // Auto-refresh preview if there are new file changes
+      if (data.activities && data.activities.length > 0) {
+        const latestChange = data.activities[0];
+        // Debounce: only refresh if last refresh was more than 2 seconds ago
+        if (Date.now() - lastRefreshTime > 2000) {
+          refreshPreview();
+          lastRefreshTime = Date.now();
+        }
+      }
     };
 
     function updateActivities(activities) {
@@ -350,6 +497,48 @@ const server = http.createServer((req, res) => {
           \${activity.details ? \`<div style="color: #888; font-size: 11px; margin-top: 4px;">\${activity.details}</div>\` : ''}
         </div>
       \`).join('');
+    }
+
+    // Refresh preview iframe
+    function refreshPreview() {
+      const previewFrame = document.getElementById('preview-frame');
+      const splitFrame = document.getElementById('split-frame');
+      if (previewFrame) {
+        previewFrame.src = previewFrame.src; // Force reload
+      }
+      if (splitFrame && splitFrame.style.display !== 'none') {
+        splitFrame.src = splitFrame.src; // Force reload
+      }
+    }
+
+    // View switching
+    function setView(view) {
+      currentView = view;
+      const grid = document.getElementById('main-grid');
+      const activityPanel = document.getElementById('activity-panel');
+      const previewPanel = document.getElementById('preview-panel');
+      const splitPreview = document.getElementById('split-preview');
+
+      // Update active button
+      document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (view === 'activity') {
+        grid.className = 'grid';
+        activityPanel.style.display = 'block';
+        previewPanel.style.display = 'none';
+        splitPreview.style.display = 'none';
+      } else if (view === 'preview') {
+        grid.className = 'grid preview-only';
+        activityPanel.style.display = 'none';
+        previewPanel.style.display = 'block';
+        splitPreview.style.display = 'none';
+      } else { // split
+        grid.className = 'grid split-view';
+        activityPanel.style.display = 'block';
+        previewPanel.style.display = 'none';
+        splitPreview.style.display = 'block';
+      }
     }
 
     // Poll git status
