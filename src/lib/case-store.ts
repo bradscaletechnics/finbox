@@ -1,5 +1,5 @@
-// localStorage-backed case store, merged with mock data for demo
-import { MOCK_CASES, type Case, type CaseStatus } from "./mock-cases";
+// localStorage-backed case store - production ready
+import { type Case, type CaseStatus } from "./mock-cases";
 
 const STORAGE_KEY = "finbox_user_cases";
 const ACTIVE_CASE_KEY = "finbox_active_case_id";
@@ -17,9 +17,9 @@ function saveUserCases(cases: Case[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
 }
 
-/** Get all cases: mock + user-created */
+/** Get all cases from localStorage */
 export function getAllCases(): Case[] {
-  return [...MOCK_CASES, ...loadUserCases()];
+  return loadUserCases();
 }
 
 /** Get a single case by ID */

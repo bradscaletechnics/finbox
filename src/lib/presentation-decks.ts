@@ -1,5 +1,6 @@
-import { Case, MOCK_CASES } from "./mock-cases";
+import { Case } from "./mock-cases";
 import { getAdvisorProfile } from "./advisor";
+import { getAllCases } from "./case-store";
 
 // ---------- Context ----------
 
@@ -98,5 +99,5 @@ export const CLIENT_DECK_SLIDES = [
 const PRESENTABLE_STATUSES = new Set(["In Progress", "Review", "Ready for Handoff"]);
 
 export function getPresentableCases(): Case[] {
-  return MOCK_CASES.filter((c) => PRESENTABLE_STATUSES.has(c.status));
+  return getAllCases().filter((c) => PRESENTABLE_STATUSES.has(c.status));
 }
