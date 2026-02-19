@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anythingllm
+    ports:
+      - "3001:3001"
+    volumes:
+      - /Users/bradpalmer/anythingllm:/app/server/storage
+      - /Users/bradpalmer/anythingllm/.env:/app/server/.env
+    env_file:
+      - /Users/bradpalmer/anythingllm/.env
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3001/api/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
