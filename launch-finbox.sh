@@ -1,7 +1,12 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
 # FinBox Launcher
-# Ensures Docker Desktop is running, starts AnythingLLM, then opens FinBox.
+# Ensures all dependencies are running:
+#   - Docker Desktop
+#   - Ollama with llama3.1:8b model
+#   - AnythingLLM container
+#   - FinBox dev server
+# Then opens FinBox in the default browser.
 # ─────────────────────────────────────────────────────────────────────────────
 
 FINBOX_DIR="/Users/bradpalmer/Projects/finbox"
@@ -79,7 +84,28 @@ else
   ok "Docker Desktop is already running."
 fi
 
-# ── Step 2: Start AnythingLLM container ──────────────────────────────────────
+# ── Step 2: Ensure Ollama is running with llama3.1:8b ────────────────────────
+log "Checking Ollama..."
+if ! command -v ollama &>/dev/null; then
+  warn "Ollama not found in PATH. Please install Ollama from https://ollama.ai"
+else
+  if ! pgrep -x "ollama" >/dev/null; then
+    log "Starting Ollama service..."
+    ollama serve >/dev/null 2>&1 &
+    sleep 2
+  fi
+  ok "Ollama service is running."
+
+  # Check if llama3.1:8b model is available
+  log "Checking llama3.1:8b model..."
+  if ! ollama list | grep -q "llama3.1:8b"; then
+    warn "llama3.1:8b model not found. Pulling it now (this may take a while)..."
+    ollama pull llama3.1:8b
+  fi
+  ok "llama3.1:8b model is ready."
+fi
+
+# ── Step 3: Start AnythingLLM container ──────────────────────────────────────
 log "Checking AnythingLLM (localhost:3001)..."
 if port_open 3001; then
   ok "AnythingLLM is already running on port 3001."
@@ -107,7 +133,7 @@ else
   ok "AnythingLLM is ready."
 fi
 
-# ── Step 3: Start FinBox dev server ──────────────────────────────────────────
+# ── Step 4: Start FinBox dev server ──────────────────────────────────────────
 log "Checking FinBox app..."
 if port_open $FINBOX_PORT; then
   ok "FinBox dev server already running on port $FINBOX_PORT."
@@ -157,7 +183,7 @@ else
   fi
 fi
 
-# ── Step 4: Open FinBox in the browser ────────────────────────────────────────
+# ── Step 5: Open FinBox in the browser ────────────────────────────────────────
 sleep 1
 ok "Opening FinBox at $FINBOX_DEV_URL ..."
 open "$FINBOX_DEV_URL"
@@ -166,4 +192,5 @@ echo ""
 ok "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 ok "  FinBox → $FINBOX_DEV_URL"
 ok "  AnythingLLM → $ANYTHINGLLM_URL"
+ok "  Ollama → llama3.1:8b model loaded"
 ok "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
