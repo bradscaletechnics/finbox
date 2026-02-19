@@ -365,50 +365,157 @@ cat .env.local | grep "VITE_ANYTHINGLLM_API_KEY"
 
 ## Step 7: Upload IFA Training Documentation
 
-This step trains AnythingLLM with IFA-specific knowledge for Canadian insurance advisors.
+FinBox includes an automated training document sync system that uploads PDFs to the "Finbox-Core" workspace.
 
 ### 7.1 Prepare Training Documents
 
-Ensure you have the IFA training PDFs:
-- `Immediate_financing_arrangement_IFAANG.pdf`
-- `IFA- $100k Example 35.pdf`
-- `F13_1167A_Balance_Sheet_Strenghtening_With_Permanent_Life_Insurance.pdf`
-- `Application EA2266687901.pdf`
-- Any additional carrier-specific documentation
+Copy your IFA training PDFs to the `training-docs/core/` folder:
 
-**Copy these files to the Mac mini** (via USB, AirDrop, or network share).
+```bash
+cd ~/Projects/finbox/training-docs/core/
 
-### 7.2 Upload Documents to AnythingLLM
+# Copy PDFs here (via USB, AirDrop, or network share)
+# Recommended documents:
+# - Immediate_financing_arrangement_IFAANG.pdf
+# - IFA- $100k Example 35.pdf
+# - F13_1167A_Balance_Sheet_Strenghtening_With_Permanent_Life_Insurance.pdf
+# - Application EA2266687901.pdf
+# - Carrier-specific product guides
+```
+
+### 7.2 Automated Sync Method (Recommended)
+
+Run the automated sync script to upload all PDFs to AnythingLLM:
+
+```bash
+cd ~/Projects/finbox
+
+# Sync all PDFs from training-docs/core/ to Finbox-Core workspace
+npm run sync-training-docs
+```
+
+**What happens**:
+1. Script checks AnythingLLM is running at localhost:3001
+2. Creates "Finbox-Core" workspace if it doesn't exist
+3. Uploads all PDFs from training-docs/core/
+4. Skips documents already uploaded (re-runnable)
+5. Displays progress for each document
+
+**Expected output**:
+```
+═══════════════════════════════════════════════════════════
+   FinBox Training Documents Sync
+═══════════════════════════════════════════════════════════
+
+🔍 Pre-flight checks...
+ℹ AnythingLLM URL: http://localhost:3001
+ℹ Training folder: ./training-docs/core
+✓ AnythingLLM is running
+
+📂 Checking Finbox-Core workspace...
+✓ Found existing workspace: Finbox-Core
+
+📄 Scanning training docs folder...
+ℹ Found 4 PDF file(s)
+
+📤 Uploading documents...
+ℹ Uploading: IFA_Guide_2024.pdf...
+✓ Uploaded: IFA_Guide_2024.pdf
+✓ Added to workspace: IFA_Guide_2024.pdf
+
+═══════════════════════════════════════════════════════════
+   Sync Complete
+═══════════════════════════════════════════════════════════
+✓ 4 document(s) uploaded
+ℹ 0 document(s) skipped (already exist)
+
+ℹ Documents are now being indexed by AnythingLLM
+ℹ This may take a few minutes depending on document size
+```
+
+### 7.3 Manual Upload Method (Alternative)
+
+If you prefer to upload manually via the AnythingLLM UI:
 
 1. **Open AnythingLLM Application**
-2. **Navigate to `finbox` workspace**
+2. **Navigate to Finbox-Core workspace** (created automatically by sync script)
 3. **Upload Documents**:
-   - Click "Upload" or "Add Documents" button
-   - Select all IFA training PDFs
+   - Click "Upload" or "Add Documents"
+   - Select PDFs from `training-docs/core/` folder
    - Click "Open" to start upload
 
-4. **Configure Document Processing**:
-   - **Chunk Size**: `1000` tokens (default)
-   - **Chunk Overlap**: `200` tokens (default)
-   - **Text Splitter**: `Recursive Character`
-   - Click "Process Documents"
+4. **Document Processing Settings** (use defaults):
+   - Chunk Size: `1000` tokens
+   - Chunk Overlap: `200` tokens
+   - Text Splitter: `Recursive Character`
 
-5. **Wait for Processing**:
-   - Processing may take 5-15 minutes depending on document size
-   - You'll see progress bars for each document
-   - Once complete, documents will show ✓ status
+5. **Wait for indexing** (5-15 minutes depending on size)
 
-### 7.3 Verify Document Upload
+### 7.4 Verify Document Upload
 
-1. **Test a Query**:
-   - In the `finbox` workspace, type:
-   - "Explain how CDA credits work in an IFA structure"
-   - The response should reference the uploaded documentation
-   - Look for citation links at the bottom of the response
+**In FinBox Application**:
+1. Navigate to **Documents** page in FinBox
+2. Check "Core Training Documents" section
+3. All uploaded PDFs should appear with "Indexed" status
 
-2. **Check Document List**:
-   - Click "Documents" in the workspace
-   - All PDFs should be listed with "Processed" status
+**Test AI Query**:
+1. Click "Ask FinBox AI" button (bottom right)
+2. Type: "Explain how CDA credits work in an IFA structure"
+3. Response should reference training documentation
+4. Check for citation sources at bottom
+
+---
+
+## Step 7.5: Per-Advisor Document Management
+
+FinBox creates a personal workspace for each advisor to upload their own training materials.
+
+### How It Works
+
+- **Core Training Docs** (`Finbox-Core` workspace): Shared across all advisors, read-only
+- **Personal Docs** (`Advisor-[Name]` workspace): Private to each advisor
+- **AI queries** search both workspaces automatically
+- **Document Manager** in FinBox provides upload/management UI
+
+### Using the Document Manager
+
+1. **Open FinBox** and log in with your advisor profile
+2. **Navigate to Documents** page (top navigation)
+3. **Upload Personal Documents**:
+   - Drag and drop PDF files into upload area
+   - Or click "Select PDF" to browse
+   - Only PDF files supported
+   - Progress bar shows upload and indexing status
+
+4. **View Documents**:
+   - **Core Training Documents**: Read-only, shared across all advisors
+   - **My Documents**: Your personal uploads, editable
+
+5. **Add Notes** to personal documents:
+   - Click "Add note" on any personal document
+   - Example: "Case study for CCPC with $500K retained earnings"
+   - Notes help you remember why you uploaded each document
+
+6. **Delete Documents**:
+   - Click trash icon on personal documents
+   - Core documents cannot be deleted (admin only)
+
+### Advisor Workspaces
+
+When you first log in, FinBox automatically creates:
+- Workspace name: `Advisor-[Your Full Name]`
+- Workspace slug: `advisor-firstname-lastname`
+- Automatically configured in AnythingLLM
+
+**Example**: If John Smith logs in, FinBox creates `Advisor-John Smith` workspace.
+
+### Multi-Workspace Queries
+
+All AI queries in FinBox search **both** workspaces:
+- **Finbox-Core**: Shared training materials
+- **Advisor-[Your Name]**: Your personal documents
+
+This provides answers from both foundational training AND your personal knowledge base.
 
 ---
 
