@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Minus, Send, MessageCircle, Square, AlertCircle } from "lucide-react";
+import { X, Minus, Send, MessageCircle, Square, AlertCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation, Link } from "react-router-dom";
-import { streamChat, isAIConfigured } from "@/lib/ai-client";
+import { queryFinBox, isAIConfigured, buildSystemPrompt, getAIConfig } from "@/lib/ai-client";
 import { toast } from "@/hooks/use-toast";
 
 interface Message {
@@ -56,7 +56,7 @@ export function AIAssistantPanel({
     }
   }, []);
 
-  const handleSend = useCallback((text?: string) => {
+  const handleSend = useCallback(async (text?: string) => {
     const msg = text || input.trim();
     if (!msg) return;
 
@@ -73,34 +73,56 @@ export function AIAssistantPanel({
     const controller = new AbortController();
     abortRef.current = controller;
 
-    let assistantContent = "";
     const assistantId = (Date.now() + 1).toString();
 
-    streamChat({
-      message: msg,
-      pathname: location.pathname,
-      signal: controller.signal,
-      onDelta: (chunk) => {
-        assistantContent += chunk;
-        const content = assistantContent;
-        setMessages((prev) => {
-          const last = prev[prev.length - 1];
-          if (last?.role === "assistant" && last.id === assistantId) {
-            return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content } : m));
-          }
-          return [...prev, { id: assistantId, role: "assistant", content }];
+    try {
+      // Use multi-workspace RAG query
+      const result = await queryFinBox({
+        message: msg,
+        pathname: location.pathname,
+        signal: controller.signal,
+      });
+
+      if (result.success) {
+        const config = getAIConfig();
+        const systemPrompt = buildSystemPrompt(location.pathname, config);
+
+        // Build response with system prompt context
+        let response = result.data.response;
+
+        // Add sources if available
+        if (result.data.sources && result.data.sources.length > 0) {
+          response += "\n\n**Sources:**";
+          result.data.sources.forEach((source, i) => {
+            response += `\n${i + 1}. ${source.title}`;
+          });
+        }
+
+        setMessages((prev) => [
+          ...prev,
+          { id: assistantId, role: "assistant", content: response },
+        ]);
+      } else {
+        toast({
+          title: "AI Error",
+          description: result.error,
+          variant: "destructive"
         });
-      },
-      onDone: () => {
-        setIsStreaming(false);
-        abortRef.current = null;
-      },
-      onError: (error) => {
-        setIsStreaming(false);
-        abortRef.current = null;
-        toast({ title: "AI Error", description: error, variant: "destructive" });
-      },
-    });
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        // User cancelled, ignore
+      } else {
+        toast({
+          title: "AI Error",
+          description: "Failed to get response from FinBox AI",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsStreaming(false);
+      abortRef.current = null;
+    }
   }, [input, isStreaming, handleAbort, location.pathname]);
 
   if (!open) return null;

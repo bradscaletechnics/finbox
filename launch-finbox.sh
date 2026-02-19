@@ -21,22 +21,36 @@ ok()   { echo -e "${GREEN}[FinBox]${RESET} $1"; }
 warn() { echo -e "${YELLOW}[FinBox]${RESET} $1"; }
 err()  { echo -e "${RED}[FinBox]${RESET} $1"; }
 
-# ── Resolve PATH: load nvm so npm/node are available ─────────────────────────
-export NVM_DIR="$HOME/.nvm"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  source "$NVM_DIR/nvm.sh"
+# ── Resolve PATH: use local node installation ───────────────────────────────
+NODE_DIR="$HOME/.local/node"
+export PATH="$NODE_DIR/bin:$PATH"
+
+# Try nvm as fallback
+if ! command -v node &>/dev/null; then
+  export NVM_DIR="$HOME/.nvm"
+  if [ -s "$NVM_DIR/nvm.sh" ]; then
+    source "$NVM_DIR/nvm.sh"
+  fi
 fi
 
-# Fallback: also add common node locations to PATH
-export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.nvm/versions/node/v20.20.0/bin:$PATH"
+# Additional fallback paths
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
-# Verify npm is found
-if ! command -v npm &>/dev/null; then
-  err "npm not found. Make sure Node.js is installed via nvm or Homebrew."
+# Verify node/npm are found
+if ! command -v node &>/dev/null; then
+  err "node not found. Node.js installation missing."
   exit 1
 fi
-NPM_BIN="$(command -v npm)"
-log "Using npm at: $NPM_BIN ($(npm --version))"
+
+if ! command -v npm &>/dev/null; then
+  # Use npm-cli.js directly if npm symlink is broken
+  NPM_BIN="$NODE_DIR/bin/node $NODE_DIR/lib/node_modules/npm/bin/npm-cli.js"
+else
+  NPM_BIN="$(command -v npm)"
+fi
+
+NODE_VERSION=$(node --version 2>/dev/null || echo "unknown")
+log "Using Node.js at: $(command -v node) ($NODE_VERSION)"
 
 # ── Helper: check if a TCP port is open ───────────────────────────────────────
 port_open() {
@@ -109,9 +123,15 @@ else
   fi
   rm -f /tmp/finbox-dev.pid
 
-  # Start Vite in background using the resolved npm
+  # Start Vite in background using node directly
   cd "$FINBOX_DIR"
-  nohup "$NPM_BIN" run dev > "$LOG_FILE" 2>&1 &
+  if [ -x "$NODE_DIR/bin/node" ] && [ -f "$FINBOX_DIR/node_modules/.bin/vite" ]; then
+    # Use node + vite directly (more reliable)
+    nohup "$NODE_DIR/bin/node" "$FINBOX_DIR/node_modules/.bin/vite" > "$LOG_FILE" 2>&1 &
+  else
+    # Fallback to npm run dev
+    nohup $NPM_BIN run dev > "$LOG_FILE" 2>&1 &
+  fi
   DEV_PID=$!
   echo $DEV_PID > /tmp/finbox-dev.pid
 
