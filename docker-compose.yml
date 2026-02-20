@@ -7,10 +7,10 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - /Users/bradpalmer/anythingllm:/app/server/storage
-      - /Users/bradpalmer/anythingllm/.env:/app/server/.env
+      - ${HOME}/anythingllm:/app/server/storage
+      - ${HOME}/anythingllm/.env:/app/server/.env
     env_file:
-      - /Users/bradpalmer/anythingllm/.env
+      - ${HOME}/anythingllm/.env
     restart: unless-stopped
     cap_add:
       - SYS_ADMIN

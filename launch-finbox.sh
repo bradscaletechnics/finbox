@@ -9,7 +9,7 @@
 # Then opens FinBox in the default browser.
 # ─────────────────────────────────────────────────────────────────────────────
 
-FINBOX_DIR="/Users/bradpalmer/Projects/finbox"
+FINBOX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ANYTHINGLLM_URL="http://localhost:3001"
 FINBOX_DEV_URL="http://localhost:8080"
 FINBOX_PORT=8080
