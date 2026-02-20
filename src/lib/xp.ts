@@ -1,13 +1,17 @@
 import { useSyncExternalStore } from "react";
+import { getAdvisorKey } from "./advisor";
+import { getNewlyUnlocked } from "./unlocks";
 
-// ─── Level System ───────────────────────────────────────────────
-const LEVELS = [
-  { level: 1, title: "Trainee", xpRequired: 0 },
-  { level: 2, title: "Associate", xpRequired: 500 },
-  { level: 3, title: "Advisor", xpRequired: 1500 },
-  { level: 4, title: "Senior Advisor", xpRequired: 3500 },
-  { level: 5, title: "Gold Closer", xpRequired: 7000 },
-  { level: 6, title: "Platinum Elite", xpRequired: 12000 },
+// ─── Level System ───────────────────────────────────────────────────────────
+export const LEVELS = [
+  { level: 1, title: "Trainee",        xpRequired: 0     },
+  { level: 2, title: "Associate",      xpRequired: 300   },
+  { level: 3, title: "Advisor",        xpRequired: 900   },
+  { level: 4, title: "Senior Advisor", xpRequired: 2200  },
+  { level: 5, title: "Gold Closer",    xpRequired: 5000  },
+  { level: 6, title: "Platinum Elite", xpRequired: 10000 },
+  { level: 7, title: "Diamond Pro",    xpRequired: 20000 },
+  { level: 8, title: "Principal",      xpRequired: 35000 },
 ];
 
 export const XP_REWARDS = {
@@ -23,7 +27,7 @@ export interface XPState {
   title: string;
   xpInLevel: number;
   xpToNext: number;
-  levelProgress: number; // 0-100
+  levelProgress: number; // 0–100 %
   streak: number;
   lastActiveDate: string; // YYYY-MM-DD
   justLeveledUp: boolean;
@@ -33,9 +37,13 @@ function getToday(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function xpKey(): string {
+  return `finbox_xp_${getAdvisorKey()}`;
+}
+
 function loadPersisted(): { totalXP: number; streak: number; lastActiveDate: string } {
   try {
-    const raw = localStorage.getItem("finbox_xp");
+    const raw = localStorage.getItem(xpKey());
     if (raw) return JSON.parse(raw);
   } catch {}
   return { totalXP: 0, streak: 0, lastActiveDate: "" };
@@ -43,7 +51,7 @@ function loadPersisted(): { totalXP: number; streak: number; lastActiveDate: str
 
 function persist(data: { totalXP: number; streak: number; lastActiveDate: string }) {
   try {
-    localStorage.setItem("finbox_xp", JSON.stringify(data));
+    localStorage.setItem(xpKey(), JSON.stringify(data));
   } catch {}
 }
 
@@ -55,12 +63,14 @@ function computeLevel(totalXP: number) {
   }
   const nextLevel = LEVELS.find((l) => l.xpRequired > totalXP);
   const xpInLevel = totalXP - current.xpRequired;
-  const xpToNext = nextLevel ? nextLevel.xpRequired - current.xpRequired : 1;
+  const xpToNext = nextLevel
+    ? nextLevel.xpRequired - current.xpRequired
+    : current.xpRequired; // at max level show full bar
   const levelProgress = Math.min(100, Math.round((xpInLevel / xpToNext) * 100));
   return { level: current.level, title: current.title, xpInLevel, xpToNext, levelProgress };
 }
 
-// ─── Streak logic (run on import) ───────────────────────────────
+// ─── Streak logic (run on module init) ─────────────────────────────────────
 const persisted = loadPersisted();
 const today = getToday();
 let streakData = { streak: persisted.streak, lastActiveDate: persisted.lastActiveDate };
@@ -69,18 +79,16 @@ if (persisted.lastActiveDate !== today) {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0, 10);
-  
+
   if (persisted.lastActiveDate === yesterdayStr) {
     streakData = { streak: persisted.streak + 1, lastActiveDate: today };
-  } else if (persisted.lastActiveDate === "") {
-    streakData = { streak: 1, lastActiveDate: today };
   } else {
-    streakData = { streak: 1, lastActiveDate: today }; // streak broken
+    streakData = { streak: persisted.lastActiveDate === "" ? 1 : 1, lastActiveDate: today };
   }
   persist({ totalXP: persisted.totalXP, ...streakData });
 }
 
-// ─── Reactive store ─────────────────────────────────────────────
+// ─── Reactive store ─────────────────────────────────────────────────────────
 let state: XPState = buildState(persisted.totalXP, false);
 const listeners = new Set<() => void>();
 
@@ -107,22 +115,33 @@ export function addXP(amount: number) {
   const justLeveledUp = newLevelData.level > oldLevel;
   state = buildState(newTotal, justLeveledUp);
   emit();
-  
-  // Fire level-up achievement (deferred to avoid circular import issues)
+
   if (justLeveledUp) {
+    // Announce level-up + newly unlocked items
+    const newlyUnlocked = getNewlyUnlocked(oldLevel, newLevelData.level);
+    const unlockNames = newlyUnlocked.map((u) => u.name).join(", ");
+    const subtitle = unlockNames
+      ? `Unlocked: ${unlockNames}`
+      : `${newTotal.toLocaleString()} XP total`;
+
     setTimeout(() => {
       import("@/components/ui/AchievementToast").then(({ triggerAchievement }) => {
         triggerAchievement(
           `Level ${newLevelData.level} — ${newLevelData.title}`,
-          `You've earned ${newTotal} XP total`
+          subtitle
         );
       });
     }, 500);
-    
+
+    // Also play the chest-open sound on level up
+    setTimeout(() => {
+      import("@/lib/sounds").then(({ playChestOpen }) => playChestOpen());
+    }, 200);
+
     setTimeout(() => {
       state = { ...state, justLeveledUp: false };
       emit();
-    }, 3000);
+    }, 4000);
   }
 }
 

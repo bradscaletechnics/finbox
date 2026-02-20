@@ -27,6 +27,7 @@ export interface Case {
   premium: string;
   carrier: string;
   advisor: string;
+  advisorEmail?: string;
   created: string;
   updated: string;
   email: string;

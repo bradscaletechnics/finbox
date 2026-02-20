@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { getAdvisorKey } from "@/lib/advisor";
 
 interface SessionStats {
   fieldsCompleted: number;
@@ -16,9 +17,13 @@ let stats: SessionStats = { fieldsCompleted: 0, stepsCompleted: 0, casesTouched:
 let personalBests: PersonalBests = { fieldsCompleted: false, stepsCompleted: false, casesTouched: false };
 const listeners = new Set<() => void>();
 
+function bestsKey(): string {
+  return `finbox_personal_bests_${getAdvisorKey()}`;
+}
+
 function loadBests(): SessionStats {
   try {
-    const raw = localStorage.getItem("finbox_personal_bests");
+    const raw = localStorage.getItem(bestsKey());
     if (raw) return JSON.parse(raw);
   } catch {}
   return { fieldsCompleted: 0, stepsCompleted: 0, casesTouched: 0 };
@@ -26,7 +31,7 @@ function loadBests(): SessionStats {
 
 function saveBests(bests: SessionStats) {
   try {
-    localStorage.setItem("finbox_personal_bests", JSON.stringify(bests));
+    localStorage.setItem(bestsKey(), JSON.stringify(bests));
   } catch {}
 }
 

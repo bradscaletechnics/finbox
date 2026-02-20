@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { getAdvisorProfile, saveAdvisorProfile, type AdvisorProfile } from "@/lib/advisor";
+import { THEMES, getActiveThemeId, applyTheme, saveThemeId } from "@/lib/theme";
+import { ALL_UNLOCKS } from "@/lib/unlocks";
 import {
   Save, Shield, Cpu, User, Database, Package, Info, Camera,
   HardDrive, Download, Trash2, AlertTriangle, Wifi, Clock,
@@ -750,54 +752,174 @@ function SoundSection() {
 
 function ThemesSection() {
   const xp = useXP();
-  const locked = xp.level < 5;
+  const { toast } = useToast();
+  const [activeThemeId, setActiveThemeId] = useState(() => getActiveThemeId());
+
+  const handleApply = (themeId: string) => {
+    applyTheme(themeId);
+    saveThemeId(themeId);
+    setActiveThemeId(themeId);
+    const t = THEMES.find((t) => t.id === themeId);
+    toast({ title: `Theme applied`, description: `${t?.name} is now active.` });
+  };
+
+  const themeUnlocks = ALL_UNLOCKS.filter((u) => u.type === "theme");
+  const featureUnlocks = ALL_UNLOCKS.filter((u) => u.type === "feature");
+  const badgeUnlocks = ALL_UNLOCKS.filter((u) => u.type === "badge");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">Themes</h2>
-        <p className="text-sm text-muted-foreground/70 mt-1">Customize the look and feel of your workstation.</p>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">Themes & Unlocks</h2>
+        <p className="text-sm text-muted-foreground/70 mt-1">
+          Themes, badges, and features unlock as you level up. You're Level {xp.level} — {xp.title}.
+        </p>
       </div>
 
+      {/* XP Progress card */}
       <Card className="border-white/[0.04] bg-card shadow-card">
-        <CardContent className="pt-6 space-y-4">
-          {/* Default theme - active */}
-          <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-md bg-gradient-to-br from-[hsl(216,55%,10%)] to-[hsl(216,35%,15%)] ring-1 ring-white/10" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Deep Navy</p>
-                <p className="text-[10px] text-muted-foreground">Default theme</p>
-              </div>
+        <CardContent className="pt-5 pb-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Level {xp.level} — {xp.title}</p>
+              <p className="text-xs text-muted-foreground">{xp.totalXP.toLocaleString()} total XP</p>
             </div>
-            <span className="text-xs font-medium text-primary">Active</span>
-          </div>
-
-          {/* Locked gold theme */}
-          <div className={cn(
-            "flex items-center justify-between rounded-lg border p-4 transition-all",
-            locked ? "border-white/[0.04] opacity-60" : "border-gold/30 bg-gold/5"
-          )}>
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-md bg-gradient-to-br from-[hsl(43,56%,20%)] to-[hsl(43,56%,35%)] ring-1 ring-gold/20" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Dark Gold</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {locked
-                    ? `Reach Level 5 (Gold Closer) to unlock — You're Level ${xp.level}`
-                    : "Premium gold accent theme"
-                  }
-                </p>
-              </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">
+                {xp.level < 8 ? `${xp.xpInLevel} / ${xp.xpToNext} XP to Level ${xp.level + 1}` : "Max Level"}
+              </p>
+              <p className="text-xs text-primary font-mono">{xp.levelProgress}%</p>
             </div>
-            {locked ? (
-              <Shield className="h-4 w-4 text-gold/50" />
-            ) : (
-              <Button variant="outline" size="sm" className="text-xs">Apply</Button>
-            )}
           </div>
+          <Progress value={xp.levelProgress} className="h-1.5" />
         </CardContent>
       </Card>
+
+      {/* Themes */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Colour Themes</h3>
+        <div className="grid grid-cols-1 gap-3">
+          {THEMES.map((theme) => {
+            const unlockItem = themeUnlocks.find((u) => u.id === `theme-${theme.id}`);
+            const isLocked = xp.level < theme.requiredLevel;
+            const isActive = activeThemeId === theme.id;
+
+            return (
+              <div
+                key={theme.id}
+                className={cn(
+                  "flex items-center justify-between rounded-lg border p-4 transition-all",
+                  isActive
+                    ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+                    : isLocked
+                    ? "border-border/40 opacity-50"
+                    : "border-border hover:border-border/80"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  {/* Swatch */}
+                  <div
+                    className="h-10 w-10 shrink-0 rounded-lg ring-1 ring-white/10 overflow-hidden relative"
+                    style={{ background: `linear-gradient(135deg, ${theme.swatchA}, ${theme.swatchB})` }}
+                  >
+                    <div
+                      className="absolute bottom-1.5 right-1.5 h-3 w-3 rounded-full ring-1 ring-white/20"
+                      style={{ backgroundColor: theme.primaryColor }}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{theme.name}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {isLocked
+                        ? `Unlock at Level ${theme.requiredLevel} (${unlockItem?.name ?? ""})`
+                        : theme.description}
+                    </p>
+                  </div>
+                </div>
+
+                {isActive ? (
+                  <span className="flex items-center gap-1 text-xs font-medium text-primary">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Active
+                  </span>
+                ) : isLocked ? (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                    <Shield className="h-3.5 w-3.5" />
+                    Lvl {theme.requiredLevel}
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => handleApply(theme.id)}
+                  >
+                    Apply
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Features */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Feature Unlocks</h3>
+        <div className="grid grid-cols-1 gap-2">
+          {featureUnlocks.map((item) => {
+            const isLocked = xp.level < item.requiredLevel;
+            return (
+              <div
+                key={item.id}
+                className={cn(
+                  "flex items-center justify-between rounded-lg border p-3 transition-all",
+                  !isLocked ? "border-primary/20 bg-primary/5" : "border-border/40 opacity-55"
+                )}
+              >
+                <div>
+                  <p className={cn("text-sm font-medium", isLocked ? "text-muted-foreground" : "text-foreground")}>
+                    {item.name}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70">{item.description}</p>
+                </div>
+                {isLocked ? (
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
+                    <Shield className="h-3 w-3" /> Lvl {item.requiredLevel}
+                  </span>
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Badges */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Advisor Badges</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {badgeUnlocks.map((item) => {
+            const isLocked = xp.level < item.requiredLevel;
+            return (
+              <div
+                key={item.id}
+                className={cn(
+                  "rounded-lg border p-3 text-center transition-all",
+                  !isLocked ? "border-primary/20 bg-primary/5" : "border-border/40 opacity-55"
+                )}
+              >
+                <p className={cn("text-xs font-semibold mb-0.5", isLocked ? "text-muted-foreground" : "text-foreground")}>
+                  {item.name}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60">
+                  {isLocked ? `Level ${item.requiredLevel}` : "Earned ✓"}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

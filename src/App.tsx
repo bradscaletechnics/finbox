@@ -14,6 +14,7 @@ import { PinScreen } from "@/components/onboarding/PinScreen";
 import { MessageCircle } from "lucide-react";
 import { ensureAdvisorWorkspace } from "@/lib/ai-client";
 import { setFirstAdvisorAsAdmin } from "@/lib/advisor";
+import { loadAndApplyTheme } from "@/lib/theme";
 import Index from "./pages/Index";
 import ClientDiscovery from "./pages/ClientDiscovery";
 import HandoffPackage from "./pages/HandoffPackage";
@@ -36,12 +37,17 @@ function AppContent() {
   const [gate, setGate] = useState<AppGate>("loading");
   const handleLock = useCallback(() => setGate("pin"), []);
   const handleCreateNew = useCallback(() => {
-    // Clear current advisor data but keep admin record
+    // Clear current advisor's session — keep admin record and shared cases array
     const admin = localStorage.getItem("finbox_admin");
     localStorage.removeItem("finbox_onboarded");
     localStorage.removeItem("finbox_pin");
     localStorage.removeItem("finbox_profile");
     localStorage.removeItem("finbox_preferences");
+    // Clear discovery wizard state so new advisor doesn't inherit previous session
+    localStorage.removeItem("finbox_discovery_data");
+    localStorage.removeItem("finbox_discovery_step");
+    localStorage.removeItem("finbox_discovery_completed");
+    localStorage.removeItem("finbox_active_case_id");
     if (admin) localStorage.setItem("finbox_admin", admin);
     setGate("onboarding");
   }, []);
@@ -57,9 +63,10 @@ function AppContent() {
     }
   }, []);
 
-  // Ensure advisor workspace exists when app unlocks
+  // Ensure advisor workspace exists when app unlocks + apply saved theme
   useEffect(() => {
     if (gate === "unlocked") {
+      loadAndApplyTheme();
       ensureAdvisorWorkspace().catch(error => {
         console.error("Failed to create advisor workspace:", error);
       });

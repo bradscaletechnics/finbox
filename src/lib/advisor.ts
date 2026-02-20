@@ -52,6 +52,22 @@ export function getAdvisorInitials(): string {
   return (parts[0]?.[0] || "A").toUpperCase();
 }
 
+/**
+ * Get a stable per-advisor storage key derived from email (or fallback to name).
+ * Used to namespace XP, personal bests, theme preferences per advisor.
+ */
+export function getAdvisorKey(): string {
+  try {
+    const raw = localStorage.getItem("finbox_profile");
+    if (raw) {
+      const p = JSON.parse(raw);
+      const src = (p.email || p.fullName || "").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      return src.slice(0, 40) || "default";
+    }
+  } catch {}
+  return "default";
+}
+
 export function saveAdvisorProfile(profile: Partial<AdvisorProfile>): void {
   const current = getAdvisorProfile();
   const updated = { ...current, ...profile };

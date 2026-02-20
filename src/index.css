@@ -65,6 +65,175 @@
     --glow-primary: 0 0 20px hsla(160, 72%, 40%, 0.12);
     --glow-gold: 0 0 24px hsla(43, 70%, 52%, 0.15);
   }
+
+  /* ── Arctic Blue (Level 2) ─────────────────────────────────── */
+  [data-theme="arctic"] {
+    --background: 220 28% 7%;
+    --foreground: 210 15% 94%;
+    --card: 218 24% 11%;
+    --card-foreground: 210 15% 94%;
+    --popover: 218 24% 11%;
+    --popover-foreground: 210 15% 94%;
+    --primary: 210 80% 58%;
+    --primary-foreground: 220 28% 7%;
+    --secondary: 218 20% 18%;
+    --secondary-foreground: 210 15% 94%;
+    --muted: 218 18% 18%;
+    --muted-foreground: 218 12% 55%;
+    --accent: 195 70% 55%;
+    --accent-foreground: 220 28% 7%;
+    --border: 218 18% 19%;
+    --input: 218 18% 21%;
+    --ring: 210 80% 58%;
+    --sidebar-background: 220 26% 9%;
+    --sidebar-foreground: 210 15% 94%;
+    --sidebar-primary: 210 80% 58%;
+    --sidebar-primary-foreground: 220 28% 7%;
+    --sidebar-accent: 218 20% 14%;
+    --sidebar-accent-foreground: 210 15% 94%;
+    --sidebar-border: 218 18% 19%;
+    --sidebar-ring: 210 80% 58%;
+    --bar-background: 220 28% 5%;
+    --bar-foreground: 218 12% 55%;
+    --glow-primary: 0 0 20px hsla(210, 80%, 58%, 0.14);
+    --glow-gold: 0 0 24px hsla(195, 70%, 55%, 0.12);
+  }
+
+  /* ── Obsidian Purple (Level 3) ─────────────────────────────── */
+  [data-theme="obsidian"] {
+    --background: 255 18% 7%;
+    --foreground: 270 10% 94%;
+    --card: 255 15% 11%;
+    --card-foreground: 270 10% 94%;
+    --popover: 255 15% 11%;
+    --popover-foreground: 270 10% 94%;
+    --primary: 270 65% 62%;
+    --primary-foreground: 255 18% 7%;
+    --secondary: 255 14% 18%;
+    --secondary-foreground: 270 10% 94%;
+    --muted: 255 14% 18%;
+    --muted-foreground: 255 8% 55%;
+    --accent: 285 55% 65%;
+    --accent-foreground: 255 18% 7%;
+    --border: 255 14% 19%;
+    --input: 255 14% 21%;
+    --ring: 270 65% 62%;
+    --sidebar-background: 255 16% 9%;
+    --sidebar-foreground: 270 10% 94%;
+    --sidebar-primary: 270 65% 62%;
+    --sidebar-primary-foreground: 255 18% 7%;
+    --sidebar-accent: 255 14% 14%;
+    --sidebar-accent-foreground: 270 10% 94%;
+    --sidebar-border: 255 14% 19%;
+    --sidebar-ring: 270 65% 62%;
+    --bar-background: 255 18% 5%;
+    --bar-foreground: 255 8% 55%;
+    --glow-primary: 0 0 20px hsla(270, 65%, 62%, 0.14);
+    --glow-gold: 0 0 24px hsla(285, 55%, 65%, 0.12);
+  }
+
+  /* ── Ember Orange (Level 4) ────────────────────────────────── */
+  [data-theme="ember"] {
+    --background: 20 20% 7%;
+    --foreground: 30 12% 94%;
+    --card: 22 16% 11%;
+    --card-foreground: 30 12% 94%;
+    --popover: 22 16% 11%;
+    --popover-foreground: 30 12% 94%;
+    --primary: 25 88% 54%;
+    --primary-foreground: 20 20% 7%;
+    --secondary: 22 14% 18%;
+    --secondary-foreground: 30 12% 94%;
+    --muted: 22 14% 18%;
+    --muted-foreground: 22 8% 55%;
+    --accent: 38 88% 54%;
+    --accent-foreground: 20 20% 7%;
+    --border: 22 14% 19%;
+    --input: 22 14% 21%;
+    --ring: 25 88% 54%;
+    --sidebar-background: 20 18% 9%;
+    --sidebar-foreground: 30 12% 94%;
+    --sidebar-primary: 25 88% 54%;
+    --sidebar-primary-foreground: 20 20% 7%;
+    --sidebar-accent: 22 14% 14%;
+    --sidebar-accent-foreground: 30 12% 94%;
+    --sidebar-border: 22 14% 19%;
+    --sidebar-ring: 25 88% 54%;
+    --bar-background: 20 20% 5%;
+    --bar-foreground: 22 8% 55%;
+    --glow-primary: 0 0 20px hsla(25, 88%, 54%, 0.15);
+    --glow-gold: 0 0 24px hsla(38, 88%, 54%, 0.12);
+  }
+
+  /* ── Gold Rush (Level 5) ───────────────────────────────────── */
+  [data-theme="gold"] {
+    --background: 30 16% 7%;
+    --foreground: 43 12% 94%;
+    --card: 32 13% 11%;
+    --card-foreground: 43 12% 94%;
+    --popover: 32 13% 11%;
+    --popover-foreground: 43 12% 94%;
+    --primary: 43 90% 52%;
+    --primary-foreground: 30 16% 7%;
+    --secondary: 32 12% 18%;
+    --secondary-foreground: 43 12% 94%;
+    --muted: 32 12% 18%;
+    --muted-foreground: 32 8% 55%;
+    --accent: 48 95% 58%;
+    --accent-foreground: 30 16% 7%;
+    --border: 32 12% 19%;
+    --input: 32 12% 21%;
+    --ring: 43 90% 52%;
+    --sidebar-background: 30 14% 9%;
+    --sidebar-foreground: 43 12% 94%;
+    --sidebar-primary: 43 90% 52%;
+    --sidebar-primary-foreground: 30 16% 7%;
+    --sidebar-accent: 32 12% 14%;
+    --sidebar-accent-foreground: 43 12% 94%;
+    --sidebar-border: 32 12% 19%;
+    --sidebar-ring: 43 90% 52%;
+    --bar-background: 30 16% 5%;
+    --bar-foreground: 32 8% 55%;
+    --glow-primary: 0 0 24px hsla(43, 90%, 52%, 0.18);
+    --glow-gold: 0 0 28px hsla(48, 95%, 58%, 0.18);
+  }
+
+  /* ── Platinum Light (Level 6) ──────────────────────────────── */
+  [data-theme="platinum"] {
+    --background: 220 20% 96%;
+    --foreground: 220 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+    --primary: 160 65% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 15% 91%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 220 15% 90%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 43 75% 46%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 84%;
+    --input: 220 15% 88%;
+    --ring: 160 65% 38%;
+    --sidebar-background: 220 18% 92%;
+    --sidebar-foreground: 220 20% 15%;
+    --sidebar-primary: 160 65% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 87%;
+    --sidebar-accent-foreground: 220 20% 15%;
+    --sidebar-border: 220 15% 84%;
+    --sidebar-ring: 160 65% 38%;
+    --bar-background: 220 20% 93%;
+    --bar-foreground: 220 12% 48%;
+    --shadow-card: 0 1px 8px rgba(0, 0, 0, 0.08);
+    --shadow-elevated: 0 4px 20px rgba(0, 0, 0, 0.12);
+    --glow-primary: 0 0 20px hsla(160, 65%, 38%, 0.1);
+    --glow-gold: 0 0 24px hsla(43, 75%, 46%, 0.1);
+  }
 }
 
 @layer base {

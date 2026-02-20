@@ -17,9 +17,17 @@ function saveUserCases(cases: Case[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
 }
 
-/** Get all cases from localStorage */
+/** Get all cases belonging to the currently logged-in advisor */
 export function getAllCases(): Case[] {
-  return loadUserCases();
+  const all = loadUserCases();
+  const email = getAdvisorEmail();
+  if (!email) return all; // no profile yet — show everything (initial onboarding)
+  return all.filter((c) =>
+    // If the case has an advisorEmail, match it exactly.
+    // Older cases without advisorEmail are treated as belonging to anyone
+    // (one-time migration grace period).
+    !c.advisorEmail || c.advisorEmail === email
+  );
 }
 
 /** Get a single case by ID */
@@ -43,6 +51,7 @@ export function createCase(clientName: string, productType: string): Case {
     premium: "$0",
     carrier: "TBD",
     advisor: getAdvisorName(),
+    advisorEmail: getAdvisorEmail(),
     created: dateStr,
     updated: "Just now",
     email: "",
@@ -131,8 +140,19 @@ function getAdvisorName(): string {
     const raw = localStorage.getItem("finbox_profile");
     if (raw) {
       const p = JSON.parse(raw);
-      return [p.firstName, p.lastName].filter(Boolean).join(" ") || "Advisor";
+      return [p.firstName, p.lastName].filter(Boolean).join(" ") || p.fullName || "Advisor";
     }
   } catch {}
   return "Advisor";
+}
+
+function getAdvisorEmail(): string {
+  try {
+    const raw = localStorage.getItem("finbox_profile");
+    if (raw) {
+      const p = JSON.parse(raw);
+      return p.email || "";
+    }
+  } catch {}
+  return "";
 }
