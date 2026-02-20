@@ -9,10 +9,12 @@ const CANADIAN_PROVINCES = [
   "Nunavut", "Ontario", "Prince Edward Island", "Quebec", "Saskatchewan", "Yukon",
 ];
 
-function FieldGroup({ label, helper, children, className = "" }: { label: string; helper?: string; children: React.ReactNode; className?: string }) {
+function FieldGroup({ label, helper, children, className = "", error = false, id }: { label: string; helper?: string; children: React.ReactNode; className?: string; error?: boolean; id?: string }) {
   return (
-    <div className={className}>
-      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</label>
+    <div className={cn(className, error && "rounded-lg ring-1 ring-destructive/40 bg-destructive/5 px-3 pt-3 pb-2 -mx-3")} id={id}>
+      <label className={cn("mb-1.5 block text-xs font-medium", error ? "text-destructive" : "text-muted-foreground")}>
+        {label}{error && <span className="ml-1 font-normal text-destructive/70">— required</span>}
+      </label>
       {children}
       {helper && <p className="mt-1 text-xs text-muted-foreground/60">{helper}</p>}
     </div>
@@ -53,7 +55,8 @@ function YesNoButtons({ value, onChange }: { value: string; onChange: (v: string
 }
 
 export function PersonalInfo() {
-  const { data, updateData } = useDiscovery();
+  const { data, updateData, highlightMissing } = useDiscovery();
+  const err = (val: string | undefined | null) => highlightMissing && (!val || !val.trim());
 
   const age = useMemo(() => {
     if (!data.dateOfBirth) return null;
@@ -99,14 +102,14 @@ export function PersonalInfo() {
 
       {/* Name */}
       <div className="grid grid-cols-3 gap-4">
-        <FieldGroup label="First Name"><input className={inputClass} placeholder="First name" value={data.firstName} onChange={(e) => updateData({ firstName: e.target.value })} /></FieldGroup>
+        <FieldGroup id="field-firstName" label="First Name" error={err(data.firstName)}><input className={inputClass} placeholder="First name" value={data.firstName} onChange={(e) => updateData({ firstName: e.target.value })} /></FieldGroup>
         <FieldGroup label="Middle Name"><input className={inputClass} placeholder="Middle name" value={data.middleName} onChange={(e) => updateData({ middleName: e.target.value })} /></FieldGroup>
-        <FieldGroup label="Last Name"><input className={inputClass} placeholder="Last name" value={data.lastName} onChange={(e) => updateData({ lastName: e.target.value })} /></FieldGroup>
+        <FieldGroup id="field-lastName" label="Last Name" error={err(data.lastName)}><input className={inputClass} placeholder="Last name" value={data.lastName} onChange={(e) => updateData({ lastName: e.target.value })} /></FieldGroup>
       </div>
 
       {/* DOB + SIN */}
       <div className="grid grid-cols-3 gap-4">
-        <FieldGroup label="Date of Birth"><input type="date" className={inputClass} value={data.dateOfBirth} onChange={(e) => updateData({ dateOfBirth: e.target.value })} /></FieldGroup>
+        <FieldGroup id="field-dateOfBirth" label="Date of Birth" error={err(data.dateOfBirth)}><input type="date" className={inputClass} value={data.dateOfBirth} onChange={(e) => updateData({ dateOfBirth: e.target.value })} /></FieldGroup>
         <FieldGroup label="Age">
           <div className="flex h-[38px] items-center rounded-button border border-border bg-secondary/30 px-3 text-sm font-mono text-foreground">{age !== null ? `${age} years` : "—"}</div>
         </FieldGroup>
@@ -117,8 +120,8 @@ export function PersonalInfo() {
 
       {/* Gender + Smoker + Canadian Status */}
       <div className="grid grid-cols-3 gap-4">
-        <FieldGroup label="Gender">
-          <select className={selectClass} value={data.gender} onChange={(e) => updateData({ gender: e.target.value })}>
+        <FieldGroup id="field-gender" label="Gender" error={err(data.gender)}>
+          <select className={inputClass} value={data.gender} onChange={(e) => updateData({ gender: e.target.value })}>
             <option value="">Select</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
@@ -126,8 +129,8 @@ export function PersonalInfo() {
             <option value="Prefer not to say">Prefer not to say</option>
           </select>
         </FieldGroup>
-        <FieldGroup label="Smoker Status">
-          <select className={selectClass} value={data.smokerStatus} onChange={(e) => updateData({ smokerStatus: e.target.value })}>
+        <FieldGroup id="field-smokerStatus" label="Smoker Status" error={err(data.smokerStatus)}>
+          <select className={inputClass} value={data.smokerStatus} onChange={(e) => updateData({ smokerStatus: e.target.value })}>
             <option value="">Select</option>
             <option value="Non-Smoker">Non-Smoker</option>
             <option value="Smoker">Smoker</option>
@@ -172,14 +175,14 @@ export function PersonalInfo() {
 
       {/* Contact */}
       <div className="grid grid-cols-2 gap-4">
-        <FieldGroup label="Phone"><input className={inputClass} placeholder="(604) 555-0100" value={data.phone} onChange={(e) => updateData({ phone: e.target.value })} /></FieldGroup>
-        <FieldGroup label="Email"><input type="email" className={inputClass} placeholder="client@email.com" value={data.email} onChange={(e) => updateData({ email: e.target.value })} /></FieldGroup>
+        <FieldGroup id="field-phone" label="Phone" error={err(data.phone)}><input className={inputClass} placeholder="(604) 555-0100" value={data.phone} onChange={(e) => updateData({ phone: e.target.value })} /></FieldGroup>
+        <FieldGroup id="field-email" label="Email" error={err(data.email)}><input type="email" className={inputClass} placeholder="client@email.com" value={data.email} onChange={(e) => updateData({ email: e.target.value })} /></FieldGroup>
       </div>
 
       {/* Marital + Employment */}
       <div className="grid grid-cols-2 gap-4">
-        <FieldGroup label="Marital Status">
-          <select className={selectClass} value={data.maritalStatus} onChange={(e) => updateData({ maritalStatus: e.target.value })}>
+        <FieldGroup id="field-maritalStatus" label="Marital Status" error={err(data.maritalStatus)}>
+          <select className={inputClass} value={data.maritalStatus} onChange={(e) => updateData({ maritalStatus: e.target.value })}>
             <option value="">Select</option>
             <option value="Single">Single</option>
             <option value="Married">Married</option>
@@ -189,7 +192,7 @@ export function PersonalInfo() {
           </select>
         </FieldGroup>
         <FieldGroup label="Employment Status">
-          <select className={selectClass} value={data.employmentStatus} onChange={(e) => updateData({ employmentStatus: e.target.value })}>
+          <select className={inputClass} value={data.employmentStatus} onChange={(e) => updateData({ employmentStatus: e.target.value })}>
             <option value="">Select</option>
             <option value="Employed">Employed</option>
             <option value="Self-Employed">Self-Employed</option>
@@ -202,7 +205,7 @@ export function PersonalInfo() {
       <div className="grid grid-cols-3 gap-4">
         <FieldGroup label="Occupation"><input className={inputClass} placeholder="Occupation" value={data.occupation} onChange={(e) => updateData({ occupation: e.target.value })} /></FieldGroup>
         <FieldGroup label="Employer Name"><input className={inputClass} placeholder="Employer" value={data.employerName} onChange={(e) => updateData({ employerName: e.target.value })} /></FieldGroup>
-        <FieldGroup label="Annual Earned Income">
+        <FieldGroup id="field-annualIncome" label="Annual Earned Income" error={highlightMissing && !data.annualIncome}>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
             <input className={`${inputClass} pl-7 font-mono`} placeholder="100,000" value={fmtCurrency(data.annualIncome)} onChange={(e) => updateData({ annualIncome: e.target.value.replace(/[^0-9]/g, "") })} />
@@ -249,7 +252,7 @@ export function PersonalInfo() {
           <p className="text-xs text-muted-foreground mt-0.5">For IFA cases the owner is almost always the corporation, not the insured.</p>
         </div>
 
-        <FieldGroup label="Owner Type">
+        <FieldGroup id="field-ownerType" label="Owner Type" error={err(data.ownerType)}>
           <div className="flex gap-2">
             {["Individual", "Corporate"].map((opt) => (
               <button key={opt} type="button" onClick={() => updateData({ ownerType: opt })}

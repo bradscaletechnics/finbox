@@ -79,7 +79,7 @@ function getRiskLabel(score: number): string {
 }
 
 export function RiskAssessment() {
-  const { data, updateData } = useDiscovery();
+  const { data, updateData, highlightMissing } = useDiscovery();
   const score = getRiskScore(data.riskAnswers);
   const riskLabel = getRiskLabel(score);
 
@@ -94,38 +94,42 @@ export function RiskAssessment() {
         <p className="mt-1 text-sm text-muted-foreground">Evaluate the client's risk tolerance through scenario-based questions.</p>
       </div>
 
-      {QUESTIONS.map((q, qi) => (
-        <div key={q.id} className="space-y-3">
-          <p className="text-sm font-medium text-foreground">
-            <span className="font-mono text-muted-foreground mr-2">{qi + 1}.</span>
-            {q.question}
-          </p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {q.options.map((opt) => (
-              <button
-                key={opt.key}
-                onClick={() => selectAnswer(q.id, opt.key)}
-                className={cn(
-                  "flex items-start gap-3 rounded-card border px-4 py-3 text-left text-sm transition-colors",
-                  data.riskAnswers[q.id] === opt.key
-                    ? "border-primary bg-primary/10 text-foreground"
-                    : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                )}
-              >
-                <span className={cn(
-                  "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                  data.riskAnswers[q.id] === opt.key
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border text-muted-foreground"
-                )}>
-                  {opt.key}
-                </span>
-                <span>{opt.label}</span>
-              </button>
-            ))}
+      {QUESTIONS.map((q, qi) => {
+        const unanswered = highlightMissing && !data.riskAnswers[q.id];
+        return (
+          <div key={q.id} id={`field-riskQ${qi + 1}`} className={cn("space-y-3 rounded-lg p-3 -mx-3 transition-colors", unanswered && "ring-1 ring-destructive/40 bg-destructive/5")}>
+            <p className={cn("text-sm font-medium", unanswered ? "text-destructive" : "text-foreground")}>
+              <span className="font-mono text-muted-foreground mr-2">{qi + 1}.</span>
+              {q.question}
+              {unanswered && <span className="ml-2 text-xs font-normal text-destructive/70">— required</span>}
+            </p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {q.options.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => selectAnswer(q.id, opt.key)}
+                  className={cn(
+                    "flex items-start gap-3 rounded-card border px-4 py-3 text-left text-sm transition-colors",
+                    data.riskAnswers[q.id] === opt.key
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  )}
+                >
+                  <span className={cn(
+                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold",
+                    data.riskAnswers[q.id] === opt.key
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border text-muted-foreground"
+                  )}>
+                    {opt.key}
+                  </span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Risk Scale */}
       {Object.keys(data.riskAnswers).length > 0 && (

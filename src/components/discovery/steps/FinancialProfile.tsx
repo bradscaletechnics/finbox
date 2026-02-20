@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 const inputClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 const selectClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
 
-function FieldGroup({ label, helper, children, className = "" }: { label: string; helper?: string; children: React.ReactNode; className?: string }) {
+function FieldGroup({ label, helper, children, className = "", error = false, id }: { label: string; helper?: string; children: React.ReactNode; className?: string; error?: boolean; id?: string }) {
   return (
-    <div className={className}>
-      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</label>
+    <div className={cn(className, error && "rounded-lg ring-1 ring-destructive/40 bg-destructive/5 px-3 pt-3 pb-2 -mx-3")} id={id}>
+      <label className={cn("mb-1.5 block text-xs font-medium", error ? "text-destructive" : "text-muted-foreground")}>
+        {label}{error && <span className="ml-1 font-normal text-destructive/70">— required</span>}
+      </label>
       {children}
       {helper && <p className="mt-1 text-xs text-muted-foreground/60">{helper}</p>}
     </div>
@@ -57,7 +59,8 @@ function YesNoToggle({ value, onChange }: { value: string; onChange: (v: string)
 }
 
 export function FinancialProfile() {
-  const { data, updateData } = useDiscovery();
+  const { data, updateData, highlightMissing } = useDiscovery();
+  const err = (val: string | undefined | null) => highlightMissing && (!val || !val.trim());
 
   const isCorporate = data.ownerType === "Corporate";
   const isIFA = data.productCategory === "IFA";
@@ -92,16 +95,16 @@ export function FinancialProfile() {
 
       {/* Personal net worth */}
       <div className="grid grid-cols-2 gap-4">
-        <FieldGroup label="Total Assets (cash, real estate, stocks, bonds)">
+        <FieldGroup id="field-totalLiquidAssets" label="Total Assets (cash, real estate, stocks, bonds)" error={err(data.totalLiquidAssets)}>
           <CurrencyInput value={data.totalLiquidAssets} onChange={(v) => updateData({ totalLiquidAssets: v })} placeholder="500,000" />
         </FieldGroup>
-        <FieldGroup label="Total Liabilities (mortgages, loans)">
+        <FieldGroup id="field-totalLiabilities" label="Total Liabilities (mortgages, loans)" error={err(data.totalLiabilities)}>
           <CurrencyInput value={data.totalLiabilities} onChange={(v) => updateData({ totalLiabilities: v })} placeholder="200,000" />
         </FieldGroup>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <FieldGroup label="Total Net Worth (Canadian)" helper="Assets minus liabilities">
+        <FieldGroup id="field-totalNetWorth" label="Total Net Worth (Canadian)" helper="Assets minus liabilities" error={err(data.totalNetWorth)}>
           <CurrencyInput value={data.totalNetWorth} onChange={(v) => updateData({ totalNetWorth: v })} placeholder="1,200,000" />
         </FieldGroup>
         <FieldGroup label="Total Foreign Net Worth">
@@ -124,7 +127,7 @@ export function FinancialProfile() {
 
       {/* Tax */}
       <div className="grid grid-cols-2 gap-4">
-        <FieldGroup label="Marginal Tax Rate">
+        <FieldGroup id="field-taxBracket" label="Marginal Tax Rate" error={err(data.taxBracket)}>
           <select className={selectClass} value={data.taxBracket} onChange={(e) => updateData({ taxBracket: e.target.value })}>
             <option value="">Select</option>
             <optgroup label="British Columbia">
@@ -160,7 +163,7 @@ export function FinancialProfile() {
             </optgroup>
           </select>
         </FieldGroup>
-        <FieldGroup label="Province of Residence for Tax">
+        <FieldGroup id="field-filingStatus" label="Province of Residence for Tax" error={err(data.filingStatus)}>
           <select className={selectClass} value={data.filingStatus} onChange={(e) => updateData({ filingStatus: e.target.value })}>
             <option value="">Select</option>
             <option value="British Columbia">British Columbia</option>
@@ -183,7 +186,7 @@ export function FinancialProfile() {
         <FieldGroup label="Face Amount Requested" helper="Total death benefit applied for">
           <CurrencyInput value={data.faceAmountRequested} onChange={(v) => updateData({ faceAmountRequested: v })} placeholder="1,000,000" />
         </FieldGroup>
-        <FieldGroup label="Reason for Purchasing this Policy">
+        <FieldGroup id="field-reasonForPurchase" label="Reason for Purchasing this Policy" error={err(data.reasonForPurchase)}>
           <select className={selectClass} value={data.reasonForPurchase} onChange={(e) => updateData({ reasonForPurchase: e.target.value })}>
             <option value="">Select</option>
             <option value="IFA">IFA (Immediate Financing Arrangement)</option>
@@ -197,7 +200,7 @@ export function FinancialProfile() {
       </div>
 
       {/* Source of Funds */}
-      <FieldGroup label="Source of Funds for This Product">
+      <FieldGroup id="field-sourceOfFunds" label="Source of Funds for This Product" error={err(data.sourceOfFunds)}>
         <select className={selectClass} value={data.sourceOfFunds} onChange={(e) => updateData({ sourceOfFunds: e.target.value })}>
           <option value="">Select</option>
           <option value="Corporate Retained Earnings">Corporate Retained Earnings</option>

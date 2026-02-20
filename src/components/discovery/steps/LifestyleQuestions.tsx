@@ -27,10 +27,13 @@ function YesNoButtons({ value, onChange }: { value: string; onChange: (v: string
   );
 }
 
-function Question({ label, value, onChange, children }: { label: string; value: string; onChange: (v: string) => void; children?: React.ReactNode }) {
+function Question({ label, value, onChange, children, error, id }: { label: string; value: string; onChange: (v: string) => void; children?: React.ReactNode; error?: boolean; id?: string }) {
   return (
-    <div className="space-y-2 py-4 border-b border-border/40 last:border-0">
-      <p className="text-sm text-foreground leading-relaxed">{label}</p>
+    <div id={id} className={cn("space-y-2 py-4 border-b border-border/40 last:border-0 rounded-lg transition-colors", error && "ring-1 ring-destructive/40 bg-destructive/5 px-3 -mx-3")}>
+      <p className={cn("text-sm leading-relaxed", error ? "text-destructive font-medium" : "text-foreground")}>
+        {label}
+        {error && <span className="ml-1 text-xs font-normal text-destructive/70">— required</span>}
+      </p>
       <YesNoButtons value={value} onChange={onChange} />
       {value === "Yes" && children && (
         <div className="mt-3 pl-2 border-l-2 border-primary/30">
@@ -42,7 +45,8 @@ function Question({ label, value, onChange, children }: { label: string; value: 
 }
 
 export function LifestyleQuestions() {
-  const { data, updateData } = useDiscovery();
+  const { data, updateData, highlightMissing } = useDiscovery();
+  const err = (val: string) => highlightMissing && !val;
 
   const updateAlcoholDetail = (index: number, updates: Partial<AlcoholDetail>) => {
     const updated = data.alcoholDetails.map((d, i) => (i === index ? { ...d, ...updates } : d));
@@ -70,18 +74,24 @@ export function LifestyleQuestions() {
         <h3 className="text-sm font-semibold text-foreground mb-1">Travel & Activities</h3>
 
         <Question
+          id="field-travelOutsideNA"
+          error={err(data.travelOutsideNA)}
           label="Do you intend to travel outside of North America for longer than a total of 2 months, or change your country of residence, in the next 12 months?"
           value={data.travelOutsideNA}
           onChange={(v) => updateData({ travelOutsideNA: v })}
         />
 
         <Question
+          id="field-aviationActivity"
+          error={err(data.aviationActivity)}
           label="In the last 2 years have you flown in an aircraft as a pilot, student pilot, or crew member, or do you intend to do so in the next 12 months?"
           value={data.aviationActivity}
           onChange={(v) => updateData({ aviationActivity: v })}
         />
 
         <Question
+          id="field-hazardousSports"
+          error={err(data.hazardousSports)}
           label="In the last 2 years have you engaged in, or do you intend to engage in, any hazardous sports or activities including but not limited to: motorized racing, scuba diving, sky diving, bungee jumping, base jumping, hang gliding, mountain climbing, or heli/cat skiing?"
           value={data.hazardousSports}
           onChange={(v) => updateData({ hazardousSports: v })}
@@ -93,18 +103,24 @@ export function LifestyleQuestions() {
         <h3 className="text-sm font-semibold text-foreground mb-1">Driving & Legal History</h3>
 
         <Question
+          id="field-duiConviction"
+          error={err(data.duiConviction)}
           label="Have you been charged with, or convicted of, driving under the influence of alcohol and/or drugs, or refused to provide a breathalyzer sample, in the last 10 years?"
           value={data.duiConviction}
           onChange={(v) => updateData({ duiConviction: v })}
         />
 
         <Question
+          id="field-drivingOffences"
+          error={err(data.drivingOffences)}
           label="Within the last 3 years, have you been charged or convicted of any other driving offences (excluding parking tickets), or have you had your driver's licence suspended or revoked?"
           value={data.drivingOffences}
           onChange={(v) => updateData({ drivingOffences: v })}
         />
 
         <Question
+          id="field-criminalOffence"
+          error={err(data.criminalOffence)}
           label="Have you ever been charged with, convicted of, or pled guilty to any criminal offence or financial services regulatory offence (including securities regulators), or are any charges pending?"
           value={data.criminalOffence}
           onChange={(v) => updateData({ criminalOffence: v })}
@@ -116,18 +132,24 @@ export function LifestyleQuestions() {
         <h3 className="text-sm font-semibold text-foreground mb-1">Substance Use</h3>
 
         <Question
+          id="field-tobaccoUse"
+          error={err(data.tobaccoUse)}
           label="Have you smoked any cigarettes or used any other tobacco or nicotine-based products, or smoking cessation aids, within the last 12 months?"
           value={data.tobaccoUse}
           onChange={(v) => updateData({ tobaccoUse: v })}
         />
 
         <Question
+          id="field-cannabisUse"
+          error={err(data.cannabisUse)}
           label="Have you used any form of marijuana or hashish within the last 5 years?"
           value={data.cannabisUse}
           onChange={(v) => updateData({ cannabisUse: v })}
         />
 
         <Question
+          id="field-drugUse"
+          error={err(data.drugUse)}
           label="Have you ever used unprescribed drugs or experimented with drugs or narcotics such as ecstasy, cocaine, LSD, heroin, amphetamines, barbiturates, anabolic steroids, or similar agents?"
           value={data.drugUse}
           onChange={(v) => updateData({ drugUse: v })}
@@ -139,6 +161,8 @@ export function LifestyleQuestions() {
         <h3 className="text-sm font-semibold text-foreground mb-1">Alcohol</h3>
 
         <Question
+          id="field-alcoholUse"
+          error={err(data.alcoholUse)}
           label="Do you drink alcohol?"
           value={data.alcoholUse}
           onChange={(v) => updateData({ alcoholUse: v })}

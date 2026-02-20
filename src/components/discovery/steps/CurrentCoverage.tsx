@@ -27,7 +27,7 @@ function YesNoButtons({ value, onChange }: { value: string; onChange: (v: string
 }
 
 export function CurrentCoverage() {
-  const { data, updateData } = useDiscovery();
+  const { data, updateData, highlightMissing } = useDiscovery();
 
   const addPolicy = () => {
     updateData({ existingPolicies: [...data.existingPolicies, { carrier: "", productType: "", faceAmount: "", annualPremium: "", yearIssued: "" }] });
@@ -120,16 +120,18 @@ export function CurrentCoverage() {
         </div>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-sm text-foreground">
+          <div id="field-applicationEverDeclined" className={cn("space-y-2 rounded-lg p-3 -mx-3 transition-colors", highlightMissing && !data.applicationEverDeclined && "ring-1 ring-destructive/40 bg-destructive/5")}>
+            <label className={cn("block text-sm", highlightMissing && !data.applicationEverDeclined ? "text-destructive font-medium" : "text-foreground")}>
               Has any application for life, disability, critical illness, or long-term care insurance ever been declined, rated, postponed, offered with restrictions, cancelled, or modified in any way?
+              {highlightMissing && !data.applicationEverDeclined && <span className="ml-1 text-xs text-destructive/70">— required</span>}
             </label>
             <YesNoButtons value={data.applicationEverDeclined} onChange={(v) => updateData({ applicationEverDeclined: v })} />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm text-foreground">
+          <div id="field-pendingApplicationElsewhere" className={cn("space-y-2 rounded-lg p-3 -mx-3 transition-colors", highlightMissing && !data.pendingApplicationElsewhere && "ring-1 ring-destructive/40 bg-destructive/5")}>
+            <label className={cn("block text-sm", highlightMissing && !data.pendingApplicationElsewhere ? "text-destructive font-medium" : "text-foreground")}>
               Is there an application for life, disability, critical illness, or long-term care insurance currently pending or contemplated with any other insurance company?
+              {highlightMissing && !data.pendingApplicationElsewhere && <span className="ml-1 text-xs text-destructive/70">— required</span>}
             </label>
             <YesNoButtons value={data.pendingApplicationElsewhere} onChange={(v) => updateData({ pendingApplicationElsewhere: v })} />
           </div>

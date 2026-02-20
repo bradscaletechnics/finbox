@@ -61,7 +61,7 @@ const TIME_OPTIONS = ["5", "7", "10", "15", "20+"];
 const inputClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 
 export function GoalsObjectives() {
-  const { data, updateData } = useDiscovery();
+  const { data, updateData, highlightMissing } = useDiscovery();
 
   const goals = data.productCategory ? (GOALS_BY_CATEGORY[data.productCategory] ?? DEFAULT_GOALS) : DEFAULT_GOALS;
 
@@ -109,9 +109,12 @@ export function GoalsObjectives() {
 
       {/* Primary Goals — conditional on product category */}
       {data.productCategory && (
-        <div>
-          <label className="mb-2 block text-xs font-medium text-muted-foreground">Primary Goals (select all that apply)</label>
-          <div className="flex flex-wrap gap-2">
+        <div id="field-primaryGoals">
+          <label className={cn("mb-2 block text-xs font-medium", highlightMissing && data.primaryGoals.length === 0 ? "text-destructive" : "text-muted-foreground")}>
+            Primary Goals (select all that apply)
+            {highlightMissing && data.primaryGoals.length === 0 && <span className="ml-1 font-normal text-destructive/70">— required</span>}
+          </label>
+          <div className={cn("flex flex-wrap gap-2 rounded-lg p-2 -mx-2 transition-colors", highlightMissing && data.primaryGoals.length === 0 && "ring-1 ring-destructive/40 bg-destructive/5")}>
             {goals.map((goal) => (
               <button
                 key={goal}
@@ -157,9 +160,10 @@ export function GoalsObjectives() {
       </div>
 
       {/* Liquidity */}
-      <div className="space-y-3">
-        <label className="block text-xs font-medium text-muted-foreground">
+      <div id="field-liquidityNeeds" className={cn("space-y-3 rounded-lg p-3 -mx-3 transition-colors", highlightMissing && !data.liquidityNeeds && "ring-1 ring-destructive/40 bg-destructive/5")}>
+        <label className={cn("block text-xs font-medium", highlightMissing && !data.liquidityNeeds ? "text-destructive" : "text-muted-foreground")}>
           Does the client anticipate needing access to these funds within the strategy period?
+          {highlightMissing && !data.liquidityNeeds && <span className="ml-1 font-normal text-destructive/70">— required</span>}
         </label>
         <div className="flex gap-3">
           {["Yes", "No"].map((opt) => (

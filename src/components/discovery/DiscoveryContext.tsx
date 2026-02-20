@@ -341,6 +341,8 @@ interface DiscoveryContextType {
   markStepComplete: (step: number) => void;
   getStepCompletion: (step: number) => number;
   resetDiscovery: () => void;
+  highlightMissing: boolean;
+  setHighlightMissing: (v: boolean) => void;
 }
 
 const DiscoveryContext = createContext<DiscoveryContextType | null>(null);
@@ -355,6 +357,7 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<DiscoveryData>(loadPersistedData);
   const [currentStep, setCurrentStepState] = useState(loadPersistedStep);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(loadPersistedCompleted);
+  const [highlightMissing, setHighlightMissing] = useState(false);
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }, [data]);
   useEffect(() => { localStorage.setItem(STEP_KEY, String(currentStep)); }, [currentStep]);
@@ -364,7 +367,11 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
     setData((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  const setCurrentStep = useCallback((step: number) => { setCurrentStepState(step); }, []);
+  // Clear error highlight whenever the user navigates to a different step
+  const setCurrentStep = useCallback((step: number) => {
+    setCurrentStepState(step);
+    setHighlightMissing(false);
+  }, []);
   const markStepComplete = useCallback((step: number) => {
     setCompletedSteps((prev) => new Set(prev).add(step));
   }, []);
@@ -413,7 +420,7 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DiscoveryContext.Provider value={{ data, updateData, currentStep, setCurrentStep, completedSteps, markStepComplete, getStepCompletion, resetDiscovery }}>
+    <DiscoveryContext.Provider value={{ data, updateData, currentStep, setCurrentStep, completedSteps, markStepComplete, getStepCompletion, resetDiscovery, highlightMissing, setHighlightMissing }}>
       {children}
     </DiscoveryContext.Provider>
   );

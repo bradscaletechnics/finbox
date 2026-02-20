@@ -6,10 +6,12 @@ import { cn } from "@/lib/utils";
 const inputClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 const selectClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
 
-function FieldGroup({ label, helper, children, className = "" }: { label: string; helper?: string; children: React.ReactNode; className?: string }) {
+function FieldGroup({ label, helper, children, className = "", error = false, id }: { label: string; helper?: string; children: React.ReactNode; className?: string; error?: boolean; id?: string }) {
   return (
-    <div className={className}>
-      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</label>
+    <div className={cn(className, error && "rounded-lg ring-1 ring-destructive/40 bg-destructive/5 px-3 pt-3 pb-2 -mx-3")} id={id}>
+      <label className={cn("mb-1.5 block text-xs font-medium", error ? "text-destructive" : "text-muted-foreground")}>
+        {label}{error && <span className="ml-1 font-normal text-destructive/70">— required</span>}
+      </label>
       {children}
       {helper && <p className="mt-1 text-xs text-muted-foreground/60">{helper}</p>}
     </div>
@@ -81,7 +83,7 @@ This recommendation aligns with the client's stated goals, financial profile, ex
 }
 
 export function ProductRecommendation() {
-  const { data, updateData } = useDiscovery();
+  const { data, updateData, highlightMissing } = useDiscovery();
   const [editingNarrative, setEditingNarrative] = useState(false);
 
   const category = data.productCategory;
@@ -131,19 +133,25 @@ export function ProductRecommendation() {
 
       {/* Carrier & Product Selection */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Carrier</label>
-          <select className={selectClass} value={data.selectedCarrier} onChange={(e) => handleCarrierChange(e.target.value)}>
+        <FieldGroup
+          id="field-selectedCarrier"
+          label="Carrier"
+          error={highlightMissing && !data.selectedCarrier}
+        >
+          <select className={cn(selectClass, highlightMissing && !data.selectedCarrier && "border-destructive/60")} value={data.selectedCarrier} onChange={(e) => handleCarrierChange(e.target.value)}>
             <option value="">Select carrier</option>
             {carrierList.map((c) => (
               <option key={c.name} value={c.name}>{c.name}</option>
             ))}
           </select>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Product</label>
+        </FieldGroup>
+        <FieldGroup
+          id="field-selectedProduct"
+          label="Product"
+          error={highlightMissing && !data.selectedProduct}
+        >
           <select
-            className={selectClass}
+            className={cn(selectClass, highlightMissing && !data.selectedProduct && "border-destructive/60")}
             value={data.selectedProduct}
             onChange={(e) => handleProductChange(e.target.value)}
             disabled={!data.selectedCarrier}
@@ -153,7 +161,7 @@ export function ProductRecommendation() {
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
-        </div>
+        </FieldGroup>
       </div>
 
       {/* Par / IFA — Plan Design & Dividend Options */}

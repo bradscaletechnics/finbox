@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Clock, AlertCircle } from "lucide-react";
+import { Clock, AlertTriangle, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { STEPS, useDiscovery } from "./DiscoveryContext";
 import { getStepConfig, getRemainingMinutes } from "./discovery-config";
+import { getMissingFields } from "./discovery-utils";
 import { triggerAchievement } from "@/components/ui/AchievementToast";
 import { incrementSessionStat } from "@/hooks/use-session-stats";
 import { playStepDing, playCaseComplete } from "@/lib/sounds";
@@ -15,74 +16,72 @@ interface Props {
   onTransition: (message: string, nextStep: number) => void;
 }
 
-function getRequiredFieldValue(data: any, key: string): boolean {
-  if (key.startsWith("riskQ")) {
-    const qNum = key.replace("riskQ", "");
-    return !!data.riskAnswers?.[`q${qNum}`];
-  }
-  if (key === "primaryGoals") return data.primaryGoals?.length > 0;
-  const val = data[key];
-  if (typeof val === "string") return val.trim().length > 0;
-  if (typeof val === "number") return val > 0;
-  return !!val;
-}
-
 export function DiscoveryBottomBar({ onTransition }: Props) {
-  const { currentStep, setCurrentStep, markStepComplete, completedSteps, data } = useDiscovery();
-  const [showMissing, setShowMissing] = useState(false);
+  const {
+    currentStep, setCurrentStep, markStepComplete,
+    completedSteps, data, highlightMissing, setHighlightMissing,
+  } = useDiscovery();
+
   const [showConfetti, setShowConfetti] = useState(false);
+  const [shake, setShake] = useState(false);
 
   const config = getStepConfig(currentStep);
   const remainingMin = getRemainingMinutes(completedSteps, currentStep);
-
-  // Check required fields
-  const missingFields = config.requiredFields.filter(
-    (f) => !getRequiredFieldValue(data, f.key)
-  );
+  const missingFields = getMissingFields(data, currentStep);
   const canContinue = missingFields.length === 0;
+  const isFinalStep = currentStep === STEPS.length;
 
-  // Check if all previous steps are consecutively completed (streak)
-  const hasStreak = (() => {
-    for (let i = 1; i < currentStep; i++) {
-      if (!completedSteps.has(i)) return false;
-    }
-    return currentStep > 1;
-  })();
+  // Shake animation reset
+  useEffect(() => {
+    if (!shake) return;
+    const t = setTimeout(() => setShake(false), 500);
+    return () => clearTimeout(t);
+  }, [shake]);
+
+  // Clear highlight once the step has no more missing fields
+  useEffect(() => {
+    if (highlightMissing && canContinue) setHighlightMissing(false);
+  }, [highlightMissing, canContinue, setHighlightMissing]);
 
   const handleBack = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
-    setShowMissing(false);
+  };
+
+  const handleDotClick = (stepId: number) => {
+    setCurrentStep(stepId);
   };
 
   const handleContinue = () => {
     if (!canContinue) {
-      setShowMissing(true);
+      setHighlightMissing(true);
+      setShake(true);
+      // Scroll to the first missing field
+      const firstKey = missingFields[0]?.key;
+      if (firstKey) {
+        const el = document.getElementById(`field-${firstKey}`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
-    setShowMissing(false);
+
+    setHighlightMissing(false);
     markStepComplete(currentStep);
     incrementSessionStat("stepsCompleted");
     playStepDing();
     addXP(XP_REWARDS.stepCompleted);
-
-    // Sync discovery data → case record
     syncStepToCase(currentStep, data, completedSteps);
 
-    // Confetti at 50% (step 4) and 100% (step 8)
     if (currentStep === Math.floor(STEPS.length / 2) || currentStep === STEPS.length) {
       setShowConfetti(true);
     }
 
-    // Fire achievement toast
-    if (currentStep === STEPS.length) {
-      // Final step — full completion
+    if (isFinalStep) {
       syncDiscoveryComplete(data);
       playCaseComplete();
       addXP(XP_REWARDS.caseHandedOff);
       triggerAchievement("Discovery Complete", "Full client profile built — case is Ready for Handoff!");
       incrementSessionStat("casesTouched");
     } else if (currentStep === 6) {
-      // Risk assessment milestone
       const riskLabel = getRiskLabel(data.riskAnswers);
       triggerAchievement(config.achievementTitle, `Risk profile: ${riskLabel}`);
     } else {
@@ -95,21 +94,27 @@ export function DiscoveryBottomBar({ onTransition }: Props) {
   };
 
   return (
-    <div className="border-t border-border bg-card/80 backdrop-blur">
+    <div className="border-t border-border bg-card/90 backdrop-blur">
       {showConfetti && <ConfettiBurst onDone={() => setShowConfetti(false)} />}
 
-      {/* Missing fields warning */}
-      {showMissing && missingFields.length > 0 && (
-        <div className="border-b border-border bg-warning/5 px-6 py-2.5">
+      {/* Missing fields banner — visible after first Continue attempt */}
+      {highlightMissing && missingFields.length > 0 && (
+        <div className="border-b border-destructive/20 bg-destructive/5 px-6 py-3">
           <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0 text-warning mt-0.5" />
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
             <div className="flex-1">
-              <p className="text-xs font-medium text-warning mb-1">Required fields missing:</p>
+              <p className="text-xs font-semibold text-destructive mb-1.5">
+                {missingFields.length} required {missingFields.length === 1 ? "field" : "fields"} missing on this step:
+              </p>
               <div className="flex flex-wrap gap-1.5">
                 {missingFields.map((f) => (
                   <button
                     key={f.key}
-                    className="text-xs text-warning/80 hover:text-warning underline underline-offset-2 transition-colors"
+                    onClick={() => {
+                      const el = document.getElementById(`field-${f.key}`);
+                      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                    className="rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
                   >
                     {f.label}
                   </button>
@@ -120,77 +125,98 @@ export function DiscoveryBottomBar({ onTransition }: Props) {
         </div>
       )}
 
-      <div className="px-6 py-3">
-        <div className="flex items-center justify-between">
-          {/* Left: Save */}
-          <button
-            onClick={() => {
-              // Data is auto-persisted via DiscoveryContext, this is a user-facing confirmation
-              const el = document.activeElement as HTMLElement;
-              el?.blur();
-              import("@/hooks/use-toast").then(({ toast }) => {
-                toast({ title: "✓ Progress saved", description: "Discovery data saved to local storage." });
-              });
-            }}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Save Progress
-          </button>
-
-          {/* Center: Step dots + time remaining */}
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="flex items-center gap-2">
-              {STEPS.map((step, idx) => {
-                const isCompleted = completedSteps.has(step.id);
-                const isCurrent = step.id === currentStep;
-                return (
-                  <div
-                    key={step.id}
-                    className={cn(
-                      "h-2 w-2 rounded-full transition-all",
-                      isCurrent
-                        ? "bg-primary dot-breathe"
-                        : isCompleted
-                        ? "bg-primary/50 dot-pulse"
-                        : "bg-border"
-                    )}
-                    style={isCompleted ? { animationDelay: `${idx * 60}ms` } : undefined}
-                  />
-                );
-              })}
-            </div>
-            {hasStreak && (
-              <div className="h-0.5 w-12 rounded-full bg-primary/30 streak-glow" />
-            )}
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-              <Clock className="h-2.5 w-2.5" />
-              ~{remainingMin} min remaining
+      <div className="flex items-center justify-between px-6 py-3 gap-4">
+        {/* Left: step info */}
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground/70 shrink-0">
+            <Clock className="h-3 w-3" />
+            ~{remainingMin}m left
+          </span>
+          {!canContinue && (
+            <span className="hidden sm:flex items-center gap-1 rounded-full bg-warning/10 border border-warning/30 px-2.5 py-0.5 text-xs font-medium text-warning">
+              <AlertTriangle className="h-3 w-3" />
+              {missingFields.length} field{missingFields.length !== 1 ? "s" : ""} needed
             </span>
-          </div>
+          )}
+          {canContinue && currentStep > 1 && (
+            <span className="hidden sm:flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-xs font-medium text-primary">
+              <CheckCircle2 className="h-3 w-3" />
+              Step ready
+            </span>
+          )}
+        </div>
 
-          {/* Right: Back / Continue */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleBack}
-              disabled={currentStep === 1}
-              className="rounded-button border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed press-scale"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleContinue}
-              className={cn(
-                "rounded-button px-5 py-2 text-sm font-medium transition-all press-scale",
-                canContinue
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-primary/40 text-primary-foreground/60 cursor-not-allowed"
-              )}
-            >
-              {currentStep === STEPS.length ? "Finish" : "Continue"}
-            </button>
+        {/* Center: clickable step dots */}
+        <div className="flex flex-col items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5">
+            {STEPS.map((step) => {
+              const isCompleted = completedSteps.has(step.id);
+              const isCurrent = step.id === currentStep;
+              const stepMissing = getMissingFields(data, step.id).length;
+              const hasData = getStepConfig(step.id).requiredFields.length > 0;
+
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => handleDotClick(step.id)}
+                  title={`${step.name}${stepMissing > 0 && !isCompleted ? ` — ${stepMissing} field${stepMissing !== 1 ? "s" : ""} needed` : ""}`}
+                  className={cn(
+                    "relative h-2.5 w-2.5 rounded-full transition-all hover:scale-125",
+                    isCurrent ? "bg-primary scale-125 shadow-[0_0_0_2px_hsl(var(--primary)/0.25)]"
+                      : isCompleted ? "bg-primary/60"
+                      : "bg-border hover:bg-border/80"
+                  )}
+                >
+                  {/* warning dot for steps with data but missing required fields */}
+                  {!isCompleted && !isCurrent && hasData && stepMissing > 0 && stepMissing < getStepConfig(step.id).requiredFields.length && (
+                    <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-warning" />
+                  )}
+                </button>
+              );
+            })}
           </div>
+          <span className="text-[10px] text-muted-foreground/50">
+            Step {currentStep} of {STEPS.length}
+          </span>
+        </div>
+
+        {/* Right: Back / Continue */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleBack}
+            disabled={currentStep === 1}
+            className="flex items-center gap-1 rounded-button border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </button>
+          <button
+            onClick={handleContinue}
+            className={cn(
+              "flex items-center gap-1.5 rounded-button px-5 py-2 text-sm font-semibold transition-all press-scale",
+              canContinue
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
+              shake && "animate-[wiggle_0.4s_ease-in-out]"
+            )}
+            style={shake ? { animation: "wiggle 0.4s ease-in-out" } : undefined}
+          >
+            {isFinalStep ? "Finish" : "Continue"}
+            {!isFinalStep && <ChevronRight className="h-4 w-4" />}
+          </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes wiggle {
+          0%, 100% { transform: translateX(0); }
+          15%       { transform: translateX(-5px); }
+          35%       { transform: translateX(5px); }
+          55%       { transform: translateX(-4px); }
+          75%       { transform: translateX(4px); }
+          90%       { transform: translateX(-2px); }
+        }
+      `}</style>
     </div>
   );
 }
