@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { STEPS, useDiscovery } from "./DiscoveryContext";
 import { getMissingCount } from "./discovery-utils";
 import { getStepConfig } from "./discovery-config";
+import { playNavigate } from "@/lib/sounds";
 
 export function DiscoverySidebar() {
   const { currentStep, setCurrentStep, completedSteps, getStepCompletion, data } = useDiscovery();
@@ -33,7 +34,7 @@ export function DiscoverySidebar() {
           return (
             <button
               key={step.id}
-              onClick={() => setCurrentStep(step.id)}
+              onClick={() => { if (step.id !== currentStep) playNavigate(); setCurrentStep(step.id); }}
               className={cn(
                 "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all",
                 isCurrent

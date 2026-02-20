@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Clock, AlertTriangle, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Clock, AlertTriangle, ChevronLeft, ChevronRight, CheckCircle2, Volume2, VolumeX } from "lucide-react";
 import { STEPS, useDiscovery } from "./DiscoveryContext";
 import { getStepConfig, getRemainingMinutes } from "./discovery-config";
 import { getMissingFields } from "./discovery-utils";
 import { triggerAchievement } from "@/components/ui/AchievementToast";
 import { incrementSessionStat } from "@/hooks/use-session-stats";
-import { playStepDing, playCaseComplete } from "@/lib/sounds";
+import { playStepDing, playCaseComplete, playBlockError, playBack, playNavigate } from "@/lib/sounds";
 import { ConfettiBurst } from "@/components/ui/ConfettiBurst";
 import { addXP, XP_REWARDS } from "@/lib/xp";
 import { syncStepToCase, syncDiscoveryComplete } from "@/lib/discovery-sync";
@@ -24,6 +24,15 @@ export function DiscoveryBottomBar({ onTransition }: Props) {
 
   const [showConfetti, setShowConfetti] = useState(false);
   const [shake, setShake] = useState(false);
+  const [muted, setMuted] = useState(() => {
+    try { return localStorage.getItem("finbox_sound_step") === "false"; } catch { return false; }
+  });
+
+  const toggleMute = () => {
+    const next = !muted;
+    setMuted(next);
+    try { localStorage.setItem("finbox_sound_step", next ? "false" : "true"); } catch { /* ignore */ }
+  };
 
   const config = getStepConfig(currentStep);
   const remainingMin = getRemainingMinutes(completedSteps, currentStep);
@@ -44,15 +53,20 @@ export function DiscoveryBottomBar({ onTransition }: Props) {
   }, [highlightMissing, canContinue, setHighlightMissing]);
 
   const handleBack = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1) {
+      playBack();
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   const handleDotClick = (stepId: number) => {
+    if (stepId !== currentStep) playNavigate();
     setCurrentStep(stepId);
   };
 
   const handleContinue = () => {
     if (!canContinue) {
+      playBlockError();
       setHighlightMissing(true);
       setShake(true);
       // Scroll to the first missing field
@@ -132,6 +146,13 @@ export function DiscoveryBottomBar({ onTransition }: Props) {
             <Clock className="h-3 w-3" />
             ~{remainingMin}m left
           </span>
+          <button
+            onClick={toggleMute}
+            title={muted ? "Unmute sounds" : "Mute sounds"}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          >
+            {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+          </button>
           {!canContinue && (
             <span className="hidden sm:flex items-center gap-1 rounded-full bg-warning/10 border border-warning/30 px-2.5 py-0.5 text-xs font-medium text-warning">
               <AlertTriangle className="h-3 w-3" />

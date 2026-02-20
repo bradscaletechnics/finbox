@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useDiscovery } from "../DiscoveryContext";
+import { playSelect } from "@/lib/sounds";
 
 const QUESTIONS = [
   {
@@ -84,6 +85,7 @@ export function RiskAssessment() {
   const riskLabel = getRiskLabel(score);
 
   const selectAnswer = (questionId: string, key: string) => {
+    playSelect();
     updateData({ riskAnswers: { ...data.riskAnswers, [questionId]: key } });
   };
 

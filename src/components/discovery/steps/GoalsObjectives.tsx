@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useDiscovery } from "../DiscoveryContext";
+import { playSelect, playDeselect, playToggle } from "@/lib/sounds";
 
 const PRODUCT_CATEGORIES = [
   { id: "IFA", label: "IFA", sub: "Immediate Financing Arrangement — Corporate Par" },
@@ -66,13 +67,16 @@ export function GoalsObjectives() {
   const goals = data.productCategory ? (GOALS_BY_CATEGORY[data.productCategory] ?? DEFAULT_GOALS) : DEFAULT_GOALS;
 
   const toggleGoal = (goal: string) => {
-    const updated = data.primaryGoals.includes(goal)
+    const removing = data.primaryGoals.includes(goal);
+    removing ? playDeselect() : playSelect();
+    const updated = removing
       ? data.primaryGoals.filter((g) => g !== goal)
       : [...data.primaryGoals, goal];
     updateData({ primaryGoals: updated });
   };
 
   const handleCategoryChange = (cat: string) => {
+    playSelect();
     updateData({ productCategory: cat, primaryGoals: [] });
   };
 
@@ -142,7 +146,7 @@ export function GoalsObjectives() {
           {TIME_OPTIONS.map((t) => (
             <button
               key={t}
-              onClick={() => updateData({ investmentTimeHorizon: t })}
+              onClick={() => { playToggle(); updateData({ investmentTimeHorizon: t }); }}
               className={cn(
                 "rounded-button px-4 py-2 text-sm font-mono font-medium transition-colors border",
                 data.investmentTimeHorizon === t
@@ -169,7 +173,7 @@ export function GoalsObjectives() {
           {["Yes", "No"].map((opt) => (
             <button
               key={opt}
-              onClick={() => updateData({ liquidityNeeds: opt })}
+              onClick={() => { playToggle(); updateData({ liquidityNeeds: opt }); }}
               className={cn(
                 "rounded-button px-5 py-2 text-sm font-medium transition-colors border",
                 data.liquidityNeeds === opt

@@ -1,6 +1,7 @@
 import { useDiscovery, ExistingPolicy } from "../DiscoveryContext";
 import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { playToggle } from "@/lib/sounds";
 
 const inputClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 
@@ -11,7 +12,7 @@ function YesNoButtons({ value, onChange }: { value: string; onChange: (v: string
         <button
           key={opt}
           type="button"
-          onClick={() => onChange(opt)}
+          onClick={() => { playToggle(); onChange(opt); }}
           className={cn(
             "rounded-button px-5 py-2 text-sm font-medium border transition-colors",
             value === opt
@@ -92,7 +93,7 @@ export function CurrentCoverage() {
       <div className="rounded-card border border-border bg-secondary/20 p-4 space-y-3">
         <label className="flex items-center gap-3 cursor-pointer">
           <div
-            onClick={() => updateData({ willReplaceCoverage: !data.willReplaceCoverage })}
+            onClick={() => { playToggle(); updateData({ willReplaceCoverage: !data.willReplaceCoverage }); }}
             className={`h-5 w-9 rounded-full transition-colors cursor-pointer ${data.willReplaceCoverage ? "bg-primary" : "bg-border"}`}
           >
             <div className={`h-5 w-5 rounded-full bg-foreground shadow transition-transform ${data.willReplaceCoverage ? "translate-x-4" : "translate-x-0"}`} />

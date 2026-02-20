@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDiscovery, InvestmentAllocation } from "../DiscoveryContext";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { playSelect, playToggle } from "@/lib/sounds";
 
 const inputClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 const selectClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
@@ -96,10 +97,12 @@ export function ProductRecommendation() {
   const isManulife = data.selectedCarrier === "Manulife";
 
   const handleCarrierChange = (carrier: string) => {
+    if (carrier) playSelect();
     updateData({ selectedCarrier: carrier, selectedProduct: "" });
   };
 
   const handleProductChange = (product: string) => {
+    if (product) playSelect();
     updateData({ selectedProduct: product });
     if (!data.recommendationNarrative) {
       updateData({ recommendationNarrative: getDefaultNarrative({ ...data, selectedProduct: product }) });
@@ -207,7 +210,7 @@ export function ProductRecommendation() {
                 <button
                   key={opt}
                   type="button"
-                  onClick={() => updateData({ premiumOffsetIntent: opt })}
+                  onClick={() => { playToggle(); updateData({ premiumOffsetIntent: opt }); }}
                   className={cn(
                     "rounded-button px-3 py-2 text-xs font-medium transition-colors border",
                     data.premiumOffsetIntent === opt
@@ -353,7 +356,7 @@ export function ProductRecommendation() {
                 <button
                   key={t}
                   type="button"
-                  onClick={() => updateData({ termPeriod: t })}
+                  onClick={() => { playToggle(); updateData({ termPeriod: t }); }}
                   className={cn(
                     "rounded-button px-5 py-2 text-sm font-mono font-medium transition-colors border",
                     data.termPeriod === t
@@ -407,7 +410,7 @@ export function ProductRecommendation() {
                 <button
                   key={opt}
                   type="button"
-                  onClick={() => updateData({ vitalityEnrollment: opt })}
+                  onClick={() => { playToggle(); updateData({ vitalityEnrollment: opt }); }}
                   className={cn(
                     "rounded-button px-4 py-2 text-sm font-medium transition-colors border",
                     data.vitalityEnrollment === opt

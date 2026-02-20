@@ -2,6 +2,7 @@ import { useDiscovery, Beneficiary, SigningAuthority, UBODeclaration } from "../
 import { Plus, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { playToggle } from "@/lib/sounds";
 
 const CANADIAN_PROVINCES = [
   "Alberta", "British Columbia", "Manitoba", "New Brunswick",
@@ -28,7 +29,7 @@ function YesNoToggle({ value, onChange }: { value: boolean; onChange: (v: boolea
   return (
     <div className="flex gap-2">
       {["Yes", "No"].map((opt) => (
-        <button key={opt} type="button" onClick={() => onChange(opt === "Yes")}
+        <button key={opt} type="button" onClick={() => { playToggle(); onChange(opt === "Yes"); }}
           className={cn("rounded-button px-4 py-2 text-sm font-medium border transition-colors",
             (opt === "Yes" ? value : !value) ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:border-primary/50"
           )}>
@@ -43,7 +44,7 @@ function YesNoButtons({ value, onChange }: { value: string; onChange: (v: string
   return (
     <div className="flex gap-2">
       {["Yes", "No"].map((opt) => (
-        <button key={opt} type="button" onClick={() => onChange(opt)}
+        <button key={opt} type="button" onClick={() => { playToggle(); onChange(opt); }}
           className={cn("rounded-button px-4 py-2 text-sm font-medium border transition-colors",
             value === opt ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:border-primary/50"
           )}>
@@ -255,7 +256,7 @@ export function PersonalInfo() {
         <FieldGroup id="field-ownerType" label="Owner Type" error={err(data.ownerType)}>
           <div className="flex gap-2">
             {["Individual", "Corporate"].map((opt) => (
-              <button key={opt} type="button" onClick={() => updateData({ ownerType: opt })}
+              <button key={opt} type="button" onClick={() => { playToggle(); updateData({ ownerType: opt }); }}
                 className={cn("rounded-button px-5 py-2 text-sm font-medium border transition-colors",
                   data.ownerType === opt ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:border-primary/50"
                 )}>

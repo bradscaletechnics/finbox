@@ -243,3 +243,111 @@ export function playFieldClick() {
   noise.start(c.currentTime);
   noise.stop(c.currentTime + 0.03);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BLOCK ERROR  — soft descending two-note "denied" bump
+// Triggered when Continue is pressed with missing required fields.
+// ─────────────────────────────────────────────────────────────────────────────
+export function playBlockError() {
+  const c = getCtx();
+  const now = c.currentTime;
+
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.14, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.34);
+  g.connect(c.destination);
+
+  // F#4 → Db4 — descending minor interval, triangle for a softer texture
+  playTone(369.99, 0.14, now, g, "triangle");        // F#4
+  playTone(277.18, 0.2, now + 0.12, g, "triangle");  // Db4
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SELECT  — ascending two-note pop, played when a chip/card is chosen
+// ─────────────────────────────────────────────────────────────────────────────
+export function playSelect() {
+  if (!isEnabled("finbox_sound_step")) return;
+  const c = getCtx();
+  const now = c.currentTime;
+
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.085, now + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+  g.connect(c.destination);
+
+  playTone(659.25, 0.07, now, g);          // E5
+  playTone(880, 0.09, now + 0.045, g);     // A5 — bright rise
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DESELECT  — descending two-note pop, played when a chip/card is unchecked
+// ─────────────────────────────────────────────────────────────────────────────
+export function playDeselect() {
+  if (!isEnabled("finbox_sound_step")) return;
+  const c = getCtx();
+  const now = c.currentTime;
+
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.06, now + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  g.connect(c.destination);
+
+  playTone(783.99, 0.06, now, g);          // G5
+  playTone(587.33, 0.08, now + 0.04, g);  // D5 — drops
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOGGLE  — clean single-note click for Yes/No buttons and switches
+// ─────────────────────────────────────────────────────────────────────────────
+export function playToggle() {
+  if (!isEnabled("finbox_sound_step")) return;
+  const c = getCtx();
+  const now = c.currentTime;
+
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.075, now + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+  g.connect(c.destination);
+
+  playTone(783.99, 0.065, now, g);  // G5 — bright, instant
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATE  — two-note ascending step-forward chime
+// ─────────────────────────────────────────────────────────────────────────────
+export function playNavigate() {
+  if (!isEnabled("finbox_sound_step")) return;
+  const c = getCtx();
+  const now = c.currentTime;
+
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.09, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+  g.connect(c.destination);
+
+  playTone(523.25, 0.11, now, g);          // C5
+  playTone(659.25, 0.13, now + 0.075, g); // E5 — steps up
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BACK  — two-note descending, softer — going back one step
+// ─────────────────────────────────────────────────────────────────────────────
+export function playBack() {
+  if (!isEnabled("finbox_sound_step")) return;
+  const c = getCtx();
+  const now = c.currentTime;
+
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.065, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+  g.connect(c.destination);
+
+  playTone(523.25, 0.1, now, g);       // C5
+  playTone(440, 0.12, now + 0.065, g); // A4 — drops
+}

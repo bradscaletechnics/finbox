@@ -1,6 +1,7 @@
 import { useDiscovery, AlcoholDetail } from "../DiscoveryContext";
 import { cn } from "@/lib/utils";
 import { Plus, Trash2 } from "lucide-react";
+import { playToggle } from "@/lib/sounds";
 
 const inputClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 const selectClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
@@ -12,7 +13,7 @@ function YesNoButtons({ value, onChange }: { value: string; onChange: (v: string
         <button
           key={opt}
           type="button"
-          onClick={() => onChange(opt)}
+          onClick={() => { playToggle(); onChange(opt); }}
           className={cn(
             "rounded-button px-5 py-2 text-sm font-medium border transition-colors",
             value === opt
