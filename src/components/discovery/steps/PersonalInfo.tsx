@@ -148,7 +148,7 @@ export function PersonalInfo() {
       {/* Height + Weight (medical underwriting triggers) */}
       <div className="grid grid-cols-2 gap-4">
         <FieldGroup label="Height" helper="Used to determine medical underwriting requirements">
-          <input className={inputClass} placeholder='e.g. 5\'11" or 180 cm' value={data.height} onChange={(e) => updateData({ height: e.target.value })} />
+          <input className={inputClass} placeholder="e.g. 5'11&quot; or 180 cm" value={data.height} onChange={(e) => updateData({ height: e.target.value })} />
         </FieldGroup>
         <FieldGroup label="Weight" helper="Used to determine medical underwriting requirements">
           <input className={inputClass} placeholder="e.g. 175 lbs or 79 kg" value={data.weight} onChange={(e) => updateData({ weight: e.target.value })} />
