@@ -1,13 +1,58 @@
 import { cn } from "@/lib/utils";
 import { useDiscovery } from "../DiscoveryContext";
 
-const GOALS = [
-  "Retirement Income",
+const PRODUCT_CATEGORIES = [
+  { id: "IFA", label: "IFA", sub: "Immediate Financing Arrangement — Corporate Par" },
+  { id: "Participating Whole Life", label: "Participating Whole Life", sub: "Equimax / Manulife Par — Personal" },
+  { id: "Universal Life", label: "Universal Life", sub: "EquiUniversal / InnoVision UL" },
+  { id: "Term Life", label: "Term Life", sub: "EquiTerm / Manulife Term" },
+];
+
+const GOALS_BY_CATEGORY: Record<string, string[]> = {
+  IFA: [
+    "Access to capital via collateral lending",
+    "Tax-deductible interest expense",
+    "Tax-sheltered policy growth",
+    "Capital Dividend Account (CDA) credit",
+    "Estate wealth transfer",
+    "Balance sheet strengthening",
+    "Other",
+  ],
+  "Participating Whole Life": [
+    "Wealth Transfer",
+    "Legacy Planning",
+    "Tax-Deferred Growth",
+    "Estate Transfer",
+    "Income / Family Protection",
+    "Corporate / Preferred Retirement Solution",
+    "Other",
+  ],
+  "Universal Life": [
+    "Tax-Deferred Investment Growth",
+    "Flexible Premium Deposits",
+    "Estate Transfer",
+    "Income / Family Protection",
+    "Business Insurance (Key Person / Buy-Sell)",
+    "Other",
+  ],
+  "Term Life": [
+    "Income / Family Protection",
+    "Mortgage Protection",
+    "Key Person Coverage",
+    "Buy-Sell Agreement Funding",
+    "Business Loan Coverage",
+    "Other",
+  ],
+};
+
+const DEFAULT_GOALS = [
+  "IFA — Immediate Financing Arrangement",
   "Wealth Transfer",
   "Tax-Deferred Growth",
-  "Principal Protection",
   "Legacy Planning",
-  "Income Replacement",
+  "Income / Family Protection",
+  "Estate Transfer",
+  "Corporate / Preferred Retirement Solution",
   "Other",
 ];
 
@@ -18,44 +63,78 @@ const inputClass = "w-full rounded-button border border-border bg-background px-
 export function GoalsObjectives() {
   const { data, updateData } = useDiscovery();
 
+  const goals = data.productCategory ? (GOALS_BY_CATEGORY[data.productCategory] ?? DEFAULT_GOALS) : DEFAULT_GOALS;
+
   const toggleGoal = (goal: string) => {
-    const goals = data.primaryGoals.includes(goal)
+    const updated = data.primaryGoals.includes(goal)
       ? data.primaryGoals.filter((g) => g !== goal)
       : [...data.primaryGoals, goal];
-    updateData({ primaryGoals: goals });
+    updateData({ primaryGoals: updated });
+  };
+
+  const handleCategoryChange = (cat: string) => {
+    updateData({ productCategory: cat, primaryGoals: [] });
   };
 
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-lg font-semibold text-foreground">Goals & Objectives</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Understand the client's financial goals and time horizon.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Identify the product type and understand the client's financial goals.</p>
       </div>
 
-      {/* Primary Goals */}
+      {/* Product Category — must be selected first */}
       <div>
-        <label className="mb-2 block text-xs font-medium text-muted-foreground">Primary Goals (select all that apply)</label>
-        <div className="flex flex-wrap gap-2">
-          {GOALS.map((goal) => (
+        <label className="mb-2 block text-xs font-medium text-muted-foreground">Product Category</label>
+        <p className="mb-3 text-xs text-muted-foreground/70">Select the product type being recommended. This determines which fields are collected throughout the case.</p>
+        <div className="grid grid-cols-2 gap-3">
+          {PRODUCT_CATEGORIES.map((cat) => (
             <button
-              key={goal}
-              onClick={() => toggleGoal(goal)}
+              key={cat.id}
+              type="button"
+              onClick={() => handleCategoryChange(cat.id)}
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors border",
-                data.primaryGoals.includes(goal)
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                "rounded-card border p-4 text-left transition-all",
+                data.productCategory === cat.id
+                  ? "border-primary bg-primary/10 shadow-sm"
+                  : "border-border hover:border-primary/40 hover:bg-secondary/30"
               )}
             >
-              {goal}
+              <p className={cn("text-sm font-semibold", data.productCategory === cat.id ? "text-primary" : "text-foreground")}>{cat.label}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{cat.sub}</p>
             </button>
           ))}
         </div>
       </div>
 
+      {/* Primary Goals — conditional on product category */}
+      {data.productCategory && (
+        <div>
+          <label className="mb-2 block text-xs font-medium text-muted-foreground">Primary Goals (select all that apply)</label>
+          <div className="flex flex-wrap gap-2">
+            {goals.map((goal) => (
+              <button
+                key={goal}
+                onClick={() => toggleGoal(goal)}
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-colors border",
+                  data.primaryGoals.includes(goal)
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                )}
+              >
+                {goal}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Time Horizon */}
       <div>
-        <label className="mb-2 block text-xs font-medium text-muted-foreground">Investment Time Horizon (years)</label>
+        <label className="mb-2 block text-xs font-medium text-muted-foreground">
+          Investment / Strategy Time Horizon (years)
+        </label>
         <div className="flex items-center gap-2">
           {TIME_OPTIONS.map((t) => (
             <button
@@ -72,12 +151,15 @@ export function GoalsObjectives() {
             </button>
           ))}
         </div>
+        {data.productCategory === "IFA" && (
+          <p className="mt-1.5 text-xs text-muted-foreground/70">For IFA: typically 10–20 years or until expected business exit.</p>
+        )}
       </div>
 
       {/* Liquidity */}
       <div className="space-y-3">
         <label className="block text-xs font-medium text-muted-foreground">
-          Do you anticipate needing access to these funds within the surrender period?
+          Does the client anticipate needing access to these funds within the strategy period?
         </label>
         <div className="flex gap-3">
           {["Yes", "No"].map((opt) => (
@@ -98,24 +180,11 @@ export function GoalsObjectives() {
         {data.liquidityNeeds === "Yes" && (
           <textarea
             className={`${inputClass} min-h-[80px]`}
-            placeholder="Please explain the anticipated liquidity needs..."
+            placeholder="Explain the anticipated liquidity needs and how they will be addressed..."
             value={data.liquidityExplanation}
             onChange={(e) => updateData({ liquidityExplanation: e.target.value })}
           />
         )}
-      </div>
-
-      {/* Retirement Age */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Target Retirement Age</label>
-          <input
-            className={`${inputClass} font-mono`}
-            placeholder="65"
-            value={data.targetRetirementAge}
-            onChange={(e) => updateData({ targetRetirementAge: e.target.value.replace(/[^0-9]/g, "") })}
-          />
-        </div>
       </div>
 
       {/* Notes */}

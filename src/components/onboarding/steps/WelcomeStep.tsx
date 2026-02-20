@@ -45,32 +45,6 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
       <p className="mt-6 text-[11px] text-muted-foreground/40 tracking-wide">
         Secure · Offline-First · Built for Advisors
       </p>
-
-      {/* Admin skip */}
-      <button
-        onClick={() => {
-          localStorage.setItem("finbox_onboarded", "true");
-          localStorage.setItem("finbox_pin", "000000");
-          localStorage.setItem("finbox_profile", JSON.stringify({
-            fullName: "Admin",
-            agency: "Demo Agency",
-            phone: "",
-            email: "admin@demo.com",
-            state: "Ontario",
-            licenseNumber: "",
-            npn: "",
-          }));
-          localStorage.setItem("finbox_preferences", JSON.stringify({
-            productFocus: "both",
-            carriers: [],
-            pin: "000000",
-          }));
-          window.location.reload();
-        }}
-        className="mt-4 text-[10px] text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors underline"
-      >
-        Skip (Admin)
-      </button>
     </div>
   );
 }

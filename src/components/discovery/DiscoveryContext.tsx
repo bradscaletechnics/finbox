@@ -6,6 +6,21 @@ export interface Beneficiary {
   percentage: number;
 }
 
+export interface SigningAuthority {
+  name: string;
+  email: string;
+}
+
+export interface UBODeclaration {
+  name: string;
+  dateOfBirth: string;
+  sin: string;
+  address: string;
+  citizenship: string;
+  ownershipPercent: string;
+  isPEP: string;
+}
+
 export interface ExistingPolicy {
   carrier: string;
   productType: string;
@@ -14,11 +29,23 @@ export interface ExistingPolicy {
   yearIssued: string;
 }
 
-export interface ExistingAnnuity {
-  carrier: string;
-  productType: string;
-  currentValue: string;
-  surrenderDate: string;
+export interface CorporateOwner {
+  name: string;
+  title: string;
+  ownershipPercent: string;
+  insuranceInForce: string;
+  insuranceAppliedFor: string;
+}
+
+export interface AlcoholDetail {
+  product: string;
+  amount: string;
+  frequency: string;
+}
+
+export interface InvestmentAllocation {
+  accountName: string;
+  percentage: string;
 }
 
 export interface DiscoveryData {
@@ -27,11 +54,16 @@ export interface DiscoveryData {
   middleName: string;
   lastName: string;
   dateOfBirth: string;
-  ssn: string;
+  sin: string;
+  gender: string;
+  smokerStatus: string;
+  canadianStatus: string;
+  height: string;
+  weight: string;
   street: string;
   city: string;
-  state: string;
-  zip: string;
+  province: string;
+  postalCode: string;
   phone: string;
   email: string;
   maritalStatus: string;
@@ -40,41 +72,113 @@ export interface DiscoveryData {
   employerName: string;
   annualIncome: string;
   beneficiaries: Beneficiary[];
+  // Owner
+  ownerType: string;
+  corporateName: string;
+  corporateIsOperatingName: boolean;
+  corporateType: string;
+  corporateProvince: string;
+  corporateIncorporationNumber: string;
+  corporateDateOfIncorporation: string;
+  corporateFiscalYearEnd: string;
+  corporateBusinessNumber: string;
+  signingAuthorities: SigningAuthority[];
+  uboDeclarations: UBODeclaration[];
+  pepHioDeclaration: string;
+  thirdPartyPayorDeclaration: string;
+  thirdPartyPayorName: string;
 
   // Step 2 - Financial Profile
   totalLiquidAssets: string;
   totalNetWorth: string;
-  monthlyExpenses: string;
+  totalLiabilities: string;
+  otherIncome: string;
+  foreignNetWorth: string;
   taxBracket: string;
   filingStatus: string;
   sourceOfFunds: string;
   existingPolicyDetails: string;
   existingAccountNumber: string;
+  reasonForPurchase: string;
+  faceAmountRequested: string;
+  // Corporate financials
+  corporateNatureOfBusiness: string;
+  corporateBusinessAssets: string;
+  corporateBusinessLiabilities: string;
+  corporateNetProfitLastYear: string;
+  corporateNetProfitPrevYear: string;
+  corporateOwners: CorporateOwner[];
+  // IFA-specific
+  collateralAssignmentIntent: string;
+  lenderName: string;
+  estimatedLoanAmount: string;
+  loanPurpose: string;
+  keyPersonValueMethod: string;
+  keyPersonValueAmount: string;
+  shareholderAgreementOnFile: string;
+  taxCounselName: string;
+  legalCounselName: string;
+  ifaRiskAcknowledged: boolean;
+  ncpiDeductibilityConfirmed: string;
 
   // Step 3 - Current Coverage
   existingPolicies: ExistingPolicy[];
-  existingAnnuities: ExistingAnnuity[];
   willReplaceCoverage: boolean;
   replacementDisclosureAcknowledged: boolean;
+  applicationEverDeclined: string;
+  pendingApplicationElsewhere: string;
 
   // Step 4 - Goals & Objectives
+  productCategory: string;
   primaryGoals: string[];
   investmentTimeHorizon: string;
   liquidityNeeds: string;
   liquidityExplanation: string;
-  targetRetirementAge: string;
   additionalNotes: string;
 
-  // Step 5 - Risk Assessment
+  // Step 5 - Lifestyle & Underwriting
+  travelOutsideNA: string;
+  aviationActivity: string;
+  hazardousSports: string;
+  duiConviction: string;
+  drivingOffences: string;
+  criminalOffence: string;
+  tobaccoUse: string;
+  cannabisUse: string;
+  drugUse: string;
+  alcoholUse: string;
+  alcoholDetails: AlcoholDetail[];
+  alcoholCounselling: string;
+
+  // Step 6 - Risk Assessment
   riskAnswers: Record<string, string>;
 
-  // Step 6 - Suitability
+  // Step 7 - Suitability
   advisorNotes: string;
 
-  // Step 7 - Product Recommendation
+  // Step 8 - Product Recommendation
   selectedCarrier: string;
   selectedProduct: string;
   recommendationNarrative: string;
+  // Par-specific
+  planDesign: string;
+  dividendOption: string;
+  edoAmount: string;
+  premiumOffsetIntent: string;
+  illustrationAcknowledged: boolean;
+  // UL-specific
+  deathBenefitDesign: string;
+  coiStructure: string;
+  investmentAllocations: InvestmentAllocation[];
+  plannedPremium: string;
+  exemptTestAcknowledged: boolean;
+  // Term-specific
+  termPeriod: string;
+  conversionPrivilege: boolean;
+  ropOption: boolean;
+  // Manulife-specific
+  vitalityEnrollment: string;
+  vitalityConsent: boolean;
 }
 
 const defaultData: DiscoveryData = {
@@ -82,11 +186,16 @@ const defaultData: DiscoveryData = {
   middleName: "",
   lastName: "",
   dateOfBirth: "",
-  ssn: "",
+  sin: "",
+  gender: "",
+  smokerStatus: "",
+  canadianStatus: "",
+  height: "",
+  weight: "",
   street: "",
   city: "",
-  state: "",
-  zip: "",
+  province: "",
+  postalCode: "",
   phone: "",
   email: "",
   maritalStatus: "",
@@ -95,29 +204,92 @@ const defaultData: DiscoveryData = {
   employerName: "",
   annualIncome: "",
   beneficiaries: [{ name: "", relationship: "", percentage: 100 }],
+  ownerType: "",
+  corporateName: "",
+  corporateIsOperatingName: true,
+  corporateType: "",
+  corporateProvince: "",
+  corporateIncorporationNumber: "",
+  corporateDateOfIncorporation: "",
+  corporateFiscalYearEnd: "",
+  corporateBusinessNumber: "",
+  signingAuthorities: [{ name: "", email: "" }],
+  uboDeclarations: [],
+  pepHioDeclaration: "",
+  thirdPartyPayorDeclaration: "",
+  thirdPartyPayorName: "",
   totalLiquidAssets: "",
   totalNetWorth: "",
-  monthlyExpenses: "",
+  totalLiabilities: "",
+  otherIncome: "",
+  foreignNetWorth: "",
   taxBracket: "",
   filingStatus: "",
   sourceOfFunds: "",
   existingPolicyDetails: "",
   existingAccountNumber: "",
+  reasonForPurchase: "",
+  faceAmountRequested: "",
+  corporateNatureOfBusiness: "",
+  corporateBusinessAssets: "",
+  corporateBusinessLiabilities: "",
+  corporateNetProfitLastYear: "",
+  corporateNetProfitPrevYear: "",
+  corporateOwners: [],
+  collateralAssignmentIntent: "",
+  lenderName: "",
+  estimatedLoanAmount: "",
+  loanPurpose: "",
+  keyPersonValueMethod: "",
+  keyPersonValueAmount: "",
+  shareholderAgreementOnFile: "",
+  taxCounselName: "",
+  legalCounselName: "",
+  ifaRiskAcknowledged: false,
+  ncpiDeductibilityConfirmed: "",
   existingPolicies: [],
-  existingAnnuities: [],
   willReplaceCoverage: false,
   replacementDisclosureAcknowledged: false,
+  applicationEverDeclined: "",
+  pendingApplicationElsewhere: "",
+  productCategory: "",
   primaryGoals: [],
   investmentTimeHorizon: "10",
   liquidityNeeds: "",
   liquidityExplanation: "",
-  targetRetirementAge: "",
   additionalNotes: "",
+  travelOutsideNA: "",
+  aviationActivity: "",
+  hazardousSports: "",
+  duiConviction: "",
+  drivingOffences: "",
+  criminalOffence: "",
+  tobaccoUse: "",
+  cannabisUse: "",
+  drugUse: "",
+  alcoholUse: "",
+  alcoholDetails: [{ product: "", amount: "", frequency: "" }],
+  alcoholCounselling: "",
   riskAnswers: {},
   advisorNotes: "",
   selectedCarrier: "",
   selectedProduct: "",
   recommendationNarrative: "",
+  planDesign: "",
+  dividendOption: "",
+  edoAmount: "",
+  premiumOffsetIntent: "",
+  illustrationAcknowledged: false,
+  deathBenefitDesign: "",
+  coiStructure: "",
+  investmentAllocations: [{ accountName: "", percentage: "" }],
+  plannedPremium: "",
+  exemptTestAcknowledged: false,
+  termPeriod: "",
+  conversionPrivilege: false,
+  ropOption: false,
+  vitalityEnrollment: "",
+  vitalityConsent: false,
 };
 
 export const STEPS = [
@@ -125,10 +297,11 @@ export const STEPS = [
   { id: 2, name: "Financial Profile", short: "Financial" },
   { id: 3, name: "Current Coverage", short: "Coverage" },
   { id: 4, name: "Goals & Objectives", short: "Goals" },
-  { id: 5, name: "Risk Assessment", short: "Risk" },
-  { id: 6, name: "Suitability Determination", short: "Suitability" },
-  { id: 7, name: "Product Recommendation", short: "Product" },
-  { id: 8, name: "Review & Summary", short: "Review" },
+  { id: 5, name: "Lifestyle & Underwriting", short: "Lifestyle" },
+  { id: 6, name: "Risk Assessment", short: "Risk" },
+  { id: 7, name: "Suitability Determination", short: "Suitability" },
+  { id: 8, name: "Product Recommendation", short: "Product" },
+  { id: 9, name: "Review & Summary", short: "Review" },
 ] as const;
 
 const STORAGE_KEY = "finbox_discovery_data";
@@ -183,27 +356,15 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   const [currentStep, setCurrentStepState] = useState(loadPersistedStep);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(loadPersistedCompleted);
 
-  // Persist data on change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
-
-  useEffect(() => {
-    localStorage.setItem(STEP_KEY, String(currentStep));
-  }, [currentStep]);
-
-  useEffect(() => {
-    localStorage.setItem(COMPLETED_KEY, JSON.stringify([...completedSteps]));
-  }, [completedSteps]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }, [data]);
+  useEffect(() => { localStorage.setItem(STEP_KEY, String(currentStep)); }, [currentStep]);
+  useEffect(() => { localStorage.setItem(COMPLETED_KEY, JSON.stringify([...completedSteps])); }, [completedSteps]);
 
   const updateData = useCallback((updates: Partial<DiscoveryData>) => {
     setData((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  const setCurrentStep = useCallback((step: number) => {
-    setCurrentStepState(step);
-  }, []);
-
+  const setCurrentStep = useCallback((step: number) => { setCurrentStepState(step); }, []);
   const markStepComplete = useCallback((step: number) => {
     setCompletedSteps((prev) => new Set(prev).add(step));
   }, []);
@@ -221,26 +382,30 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
     if (completedSteps.has(step)) return 100;
     switch (step) {
       case 1: {
-        const fields = [data.firstName, data.lastName, data.dateOfBirth, data.phone, data.email, data.maritalStatus, data.annualIncome];
+        const fields = [data.firstName, data.lastName, data.dateOfBirth, data.gender, data.smokerStatus, data.phone, data.email, data.maritalStatus, data.annualIncome, data.ownerType, data.height, data.weight];
         return Math.round((fields.filter(Boolean).length / fields.length) * 100);
       }
       case 2: {
-        const fields = [data.totalLiquidAssets, data.totalNetWorth, data.monthlyExpenses, data.taxBracket, data.filingStatus, data.sourceOfFunds];
+        const fields = [data.totalLiquidAssets, data.totalNetWorth, data.totalLiabilities, data.taxBracket, data.filingStatus, data.sourceOfFunds, data.reasonForPurchase, data.faceAmountRequested];
         return Math.round((fields.filter(Boolean).length / fields.length) * 100);
       }
       case 3:
-        return data.existingPolicies.length > 0 || data.existingAnnuities.length > 0 ? 50 : 0;
+        return data.applicationEverDeclined && data.pendingApplicationElsewhere ? 50 : 0;
       case 4: {
-        const fields = [data.primaryGoals.length > 0, data.investmentTimeHorizon, data.liquidityNeeds, data.targetRetirementAge];
+        const fields = [data.productCategory, data.primaryGoals.length > 0, data.investmentTimeHorizon, data.liquidityNeeds];
         return Math.round((fields.filter(Boolean).length / fields.length) * 100);
       }
-      case 5:
-        return Math.round((Object.keys(data.riskAnswers).length / 5) * 100);
+      case 5: {
+        const fields = [data.travelOutsideNA, data.aviationActivity, data.hazardousSports, data.duiConviction, data.drivingOffences, data.criminalOffence, data.tobaccoUse, data.cannabisUse, data.drugUse, data.alcoholUse];
+        return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+      }
       case 6:
-        return data.advisorNotes ? 50 : 0;
+        return Math.round((Object.keys(data.riskAnswers).length / 5) * 100);
       case 7:
-        return data.selectedCarrier && data.selectedProduct ? 100 : 0;
+        return data.advisorNotes ? 50 : 0;
       case 8:
+        return data.selectedCarrier && data.selectedProduct ? 100 : 0;
+      case 9:
         return 0;
       default:
         return 0;
@@ -248,9 +413,7 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DiscoveryContext.Provider
-      value={{ data, updateData, currentStep, setCurrentStep, completedSteps, markStepComplete, getStepCompletion, resetDiscovery }}
-    >
+    <DiscoveryContext.Provider value={{ data, updateData, currentStep, setCurrentStep, completedSteps, markStepComplete, getStepCompletion, resetDiscovery }}>
       {children}
     </DiscoveryContext.Provider>
   );

@@ -11,6 +11,7 @@ import { PersonalInfo } from "@/components/discovery/steps/PersonalInfo";
 import { FinancialProfile } from "@/components/discovery/steps/FinancialProfile";
 import { CurrentCoverage } from "@/components/discovery/steps/CurrentCoverage";
 import { GoalsObjectives } from "@/components/discovery/steps/GoalsObjectives";
+import { LifestyleQuestions } from "@/components/discovery/steps/LifestyleQuestions";
 import { RiskAssessment } from "@/components/discovery/steps/RiskAssessment";
 import { SuitabilityDetermination } from "@/components/discovery/steps/SuitabilityDetermination";
 import { ProductRecommendation } from "@/components/discovery/steps/ProductRecommendation";
@@ -23,10 +24,11 @@ const STEP_COMPONENTS: Record<number, React.FC> = {
   2: FinancialProfile,
   3: CurrentCoverage,
   4: GoalsObjectives,
-  5: RiskAssessment,
-  6: SuitabilityDetermination,
-  7: ProductRecommendation,
-  8: ReviewSummary,
+  5: LifestyleQuestions,
+  6: RiskAssessment,
+  7: SuitabilityDetermination,
+  8: ProductRecommendation,
+  9: ReviewSummary,
 };
 
 function DiscoveryContent() {

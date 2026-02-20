@@ -81,7 +81,7 @@ export function DiscoveryBottomBar({ onTransition }: Props) {
       addXP(XP_REWARDS.caseHandedOff);
       triggerAchievement("Discovery Complete", "Full client profile built — case is Ready for Handoff!");
       incrementSessionStat("casesTouched");
-    } else if (currentStep === 5) {
+    } else if (currentStep === 6) {
       // Risk assessment milestone
       const riskLabel = getRiskLabel(data.riskAnswers);
       triggerAchievement(config.achievementTitle, `Risk profile: ${riskLabel}`);

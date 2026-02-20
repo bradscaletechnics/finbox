@@ -6,8 +6,8 @@ import { getRiskLabel } from "@/lib/risk";
 import { getAdvisorProfile } from "@/lib/advisor";
 import { HandoffLoader } from "@/components/ui/HandoffLoader";
 
-const fmt = (v: string) => (v ? `$${Number(v).toLocaleString("en-US")}` : "—");
-const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+const fmt = (v: string) => (v ? `$${Number(v).toLocaleString("en-CA")}` : "—");
+const today = new Date().toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" });
 const caseId = "IFA-2024-" + String(Math.floor(Math.random() * 900 + 100));
 
 function SectionTitle({ number, title }: { number: number; title: string }) {
@@ -110,17 +110,20 @@ export default function HandoffPackage() {
                 <Field label="Age" value={String(age)} />
                 <Field label="Phone" value={data.phone || "—"} />
                 <Field label="Email" value={data.email || "—"} />
-                <Field label="Address" value={[data.street, data.city, data.state, data.zip].filter(Boolean).join(", ") || "—"} />
+                <Field label="Address" value={[data.street, data.city, data.province, data.postalCode].filter(Boolean).join(", ") || "—"} />
                 <Field label="Marital Status" value={data.maritalStatus || "—"} />
                 <Field label="Occupation" value={data.occupation || "—"} />
               </div>
               <div className="rounded-lg bg-[hsl(210,20%,97%)] p-4">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">Financial Snapshot</p>
-                <Field label="Annual Income" value={fmt(data.annualIncome)} />
-                <Field label="Total Net Worth" value={fmt(data.totalNetWorth)} />
-                <Field label="Total Liquid Assets" value={fmt(data.totalLiquidAssets)} />
-                <Field label="Tax Bracket" value={data.taxBracket || "—"} />
-                <Field label="Monthly Expenses" value={fmt(data.monthlyExpenses)} />
+                <Field label="Annual Earned Income" value={fmt(data.annualIncome)} />
+                <Field label="Other Income" value={fmt(data.otherIncome)} />
+                <Field label="Total Assets" value={fmt(data.totalLiquidAssets)} />
+                <Field label="Total Liabilities" value={fmt(data.totalLiabilities)} />
+                <Field label="Total Net Worth (Canadian)" value={fmt(data.totalNetWorth)} />
+                <Field label="Total Foreign Net Worth" value={fmt(data.foreignNetWorth)} />
+                <Field label="Marginal Tax Rate" value={data.taxBracket || "—"} />
+                <Field label="Reason for Purchase" value={data.reasonForPurchase || "—"} />
               </div>
             </div>
           </div>
@@ -132,14 +135,14 @@ export default function HandoffPackage() {
               <div>
                 <Field label="Primary Goals" value={data.primaryGoals.length > 0 ? data.primaryGoals.join(", ") : "—"} />
                 <Field label="Investment Time Horizon" value={data.investmentTimeHorizon ? `${data.investmentTimeHorizon} years` : "—"} />
-                <Field label="Target Retirement Age" value={data.targetRetirementAge || "—"} />
                 <Field label="Liquidity Needs" value={data.liquidityNeeds || "—"} />
+                <Field label="Application Ever Declined/Rated" value={data.applicationEverDeclined || "—"} />
+                <Field label="Pending Application Elsewhere" value={data.pendingApplicationElsewhere || "—"} />
               </div>
               <div>
                 <Field label="Risk Assessment" value={risk} />
                 <Field label="Questions Answered" value={`${Object.keys(data.riskAnswers).length}/5`} />
                 <Field label="Existing Policies" value={`${data.existingPolicies.length} policy(ies)`} />
-                <Field label="Existing Annuities" value={`${data.existingAnnuities.length} annuity(ies)`} />
                 <Field label="Replacing Coverage" value={data.willReplaceCoverage ? "Yes" : "No"} />
               </div>
             </div>
@@ -154,11 +157,33 @@ export default function HandoffPackage() {
             </div>
             <div className="mb-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">Compliance Checklist</p>
-              <CheckItem label="Client age appropriate for surrender period" />
-              <CheckItem label="Liquidity needs addressed" checked={data.liquidityNeeds === "No" || (data.liquidityNeeds === "Yes" && !!data.liquidityExplanation)} />
-              <CheckItem label="Replacement disclosure completed if applicable" checked={!data.willReplaceCoverage || data.replacementDisclosureAcknowledged} />
+              <CheckItem label="Client identity verified (name, DOB, SIN)" checked={!!(data.firstName && data.lastName && data.dateOfBirth && data.sin)} />
               <CheckItem label="Source of funds documented" checked={!!data.sourceOfFunds} />
-              <CheckItem label="Risk tolerance assessment complete" checked={Object.keys(data.riskAnswers).length === 5} />
+              <CheckItem label="Face amount and reason for purchase documented" checked={!!(data.faceAmountRequested && data.reasonForPurchase)} />
+              <CheckItem label="Risk tolerance assessment complete (5/5)" checked={Object.keys(data.riskAnswers).length === 5} />
+              <CheckItem label="Liquidity needs addressed" checked={data.liquidityNeeds === "No" || (data.liquidityNeeds === "Yes" && !!data.liquidityExplanation)} />
+              <CheckItem label="Replacement disclosure completed (if applicable)" checked={!data.willReplaceCoverage || data.replacementDisclosureAcknowledged} />
+              {data.ownerType === "Corporate" && (
+                <>
+                  <CheckItem label="FINTRAC: UBO declarations obtained (25%+ owners)" checked={data.uboDeclarations.length > 0} />
+                  <CheckItem label="FINTRAC: PEP/HIO declaration obtained" checked={!!data.pepHioDeclaration} />
+                  <CheckItem label="FINTRAC: Third-party payor declaration obtained" checked={!!data.thirdPartyPayorDeclaration} />
+                </>
+              )}
+              {data.productCategory === "IFA" && (
+                <>
+                  <CheckItem label="IFA: Collateral assignment intent documented" checked={!!data.collateralAssignmentIntent} />
+                  <CheckItem label="IFA: Tax counsel named and NCPI addressed" checked={!!(data.taxCounselName && data.ncpiDeductibilityConfirmed)} />
+                  <CheckItem label="IFA: Legal counsel named" checked={!!data.legalCounselName} />
+                  <CheckItem label="IFA: Risk acknowledgment obtained" checked={data.ifaRiskAcknowledged} />
+                </>
+              )}
+              {(data.productCategory === "Participating Whole Life" || data.productCategory === "IFA") && (
+                <CheckItem label="Par: Policy illustration reviewed and acknowledged" checked={data.illustrationAcknowledged} />
+              )}
+              {data.productCategory === "Universal Life" && (
+                <CheckItem label="UL: Exempt test acknowledged" checked={data.exemptTestAcknowledged} />
+              )}
             </div>
             {data.advisorNotes && (
               <div>
@@ -171,21 +196,88 @@ export default function HandoffPackage() {
           {/* Section 4 — Product Recommendation */}
           <div className="mb-8">
             <SectionTitle number={4} title="Product Recommendation" />
-            <div className="grid grid-cols-2 gap-x-10 gap-y-1">
+            <div className="grid grid-cols-2 gap-x-10 gap-y-1 mb-4">
               <div>
+                <Field label="Product Category" value={data.productCategory || "—"} />
                 <Field label="Carrier" value={data.selectedCarrier || "—"} />
                 <Field label="Product" value={data.selectedProduct || "—"} />
+                <Field label="Face Amount" value={fmt(data.faceAmountRequested)} />
+                <Field label="Reason for Purchase" value={data.reasonForPurchase || "—"} />
               </div>
-              <div className="rounded-lg bg-[hsl(210,20%,97%)] p-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">Key Features</p>
-                <ul className="space-y-1 text-sm text-[hsl(216,55%,10%)]">
-                  <li>• Principal protection with 0% floor</li>
-                  <li>• Tax-deferred growth potential</li>
-                  <li>• Guaranteed lifetime income rider</li>
-                  <li>• Flexible premium options</li>
-                </ul>
-              </div>
+              {/* Par / IFA */}
+              {(data.productCategory === "Participating Whole Life" || data.productCategory === "IFA") && (
+                <div className="rounded-lg bg-[hsl(210,20%,97%)] p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">Par Policy Design</p>
+                  <Field label="Plan Design" value={data.planDesign || "—"} />
+                  <Field label="Dividend Option" value={data.dividendOption || "—"} />
+                  {data.dividendOption === "EDO" && <Field label="EDO Annual Deposit" value={fmt(data.edoAmount)} />}
+                  <Field label="Premium Offset" value={data.premiumOffsetIntent || "—"} />
+                  <Field label="Illustration Acknowledged" value={data.illustrationAcknowledged ? "Yes ✓" : "No — required"} />
+                </div>
+              )}
+              {/* UL */}
+              {data.productCategory === "Universal Life" && (
+                <div className="rounded-lg bg-[hsl(210,20%,97%)] p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">UL Policy Configuration</p>
+                  <Field label="Death Benefit Design" value={data.deathBenefitDesign || "—"} />
+                  <Field label="COI Structure" value={data.coiStructure || "—"} />
+                  <Field label="Planned Annual Premium" value={fmt(data.plannedPremium)} />
+                  <Field label="Exempt Test Acknowledged" value={data.exemptTestAcknowledged ? "Yes ✓" : "No — required"} />
+                  {data.investmentAllocations.filter((a) => a.accountName).length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs font-semibold text-[hsl(218,18%,45%)] mb-1">Fund Allocations</p>
+                      {data.investmentAllocations.filter((a) => a.accountName).map((a, i) => (
+                        <p key={i} className="text-sm text-[hsl(216,55%,10%)]">{a.accountName}: {a.percentage}%</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Term */}
+              {data.productCategory === "Term Life" && (
+                <div className="rounded-lg bg-[hsl(210,20%,97%)] p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">Term Policy Options</p>
+                  <Field label="Term Period" value={data.termPeriod ? `${data.termPeriod} years` : "—"} />
+                  <Field label="Conversion Privilege" value={data.conversionPrivilege ? "Yes" : "No"} />
+                  <Field label="Return of Premium (ROP)" value={data.ropOption ? "Yes" : "No"} />
+                </div>
+              )}
             </div>
+
+            {/* IFA Lending Details */}
+            {data.productCategory === "IFA" && (
+              <div className="rounded-lg border border-[hsl(215,20%,90%)] bg-[hsl(210,20%,97%)] p-4 mb-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">IFA — Collateral Lending Details</p>
+                <div className="grid grid-cols-2 gap-x-10 gap-y-1">
+                  <div>
+                    <Field label="Collateral Assignment Intent" value={data.collateralAssignmentIntent || "—"} />
+                    <Field label="Lender" value={data.lenderName || "—"} />
+                    <Field label="Estimated Loan Amount" value={fmt(data.estimatedLoanAmount)} />
+                    <Field label="Loan Purpose" value={data.loanPurpose || "—"} />
+                  </div>
+                  <div>
+                    <Field label="Key Person Value Method" value={data.keyPersonValueMethod || "—"} />
+                    <Field label="Key Person Value Amount" value={fmt(data.keyPersonValueAmount)} />
+                    <Field label="Shareholder Agreement on File" value={data.shareholderAgreementOnFile || "—"} />
+                    <Field label="Tax Counsel" value={data.taxCounselName || "—"} />
+                    <Field label="Legal Counsel" value={data.legalCounselName || "—"} />
+                    <Field label="NCPI Deductibility" value={data.ncpiDeductibilityConfirmed || "—"} />
+                    <Field label="IFA Risk Acknowledged" value={data.ifaRiskAcknowledged ? "Yes ✓" : "No — required"} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Manulife Vitality */}
+            {data.selectedCarrier === "Manulife" && data.vitalityEnrollment && (
+              <div className="rounded-lg border border-[hsl(215,20%,90%)] bg-[hsl(210,20%,97%)] p-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">Manulife Vitality</p>
+                <Field label="Vitality Enrollment" value={data.vitalityEnrollment} />
+                {data.vitalityEnrollment === "Enrolling" && (
+                  <Field label="Vitality Consent" value={data.vitalityConsent ? "Obtained ✓" : "Pending"} />
+                )}
+              </div>
+            )}
           </div>
 
           {/* Section 5 — Application Data */}
@@ -194,12 +286,22 @@ export default function HandoffPackage() {
             <div className="grid grid-cols-2 gap-x-10 gap-y-1">
               <div>
                 <Field label="Full Name" value={fullName} />
-                <Field label="SSN" value={data.ssn ? `***-**-${data.ssn.slice(-4)}` : "—"} />
+                <Field label="SIN" value={data.sin ? `***-***-${data.sin.slice(-3)}` : "—"} />
                 <Field label="Date of Birth" value={data.dateOfBirth || "—"} />
+                <Field label="Gender" value={data.gender || "—"} />
+                <Field label="Smoker Status" value={data.smokerStatus || "—"} />
+                <Field label="Canadian Status" value={data.canadianStatus || "—"} />
                 <Field label="Employment Status" value={data.employmentStatus || "—"} />
                 <Field label="Employer" value={data.employerName || "—"} />
-                <Field label="Filing Status" value={data.filingStatus || "—"} />
+                <Field label="Province" value={data.province || "—"} />
                 <Field label="Source of Funds" value={data.sourceOfFunds || "—"} />
+                {data.ownerType === "Corporate" && (
+                  <>
+                    <Field label="Policy Owner" value={data.corporateName || "—"} />
+                    <Field label="Business Number" value={data.corporateBusinessNumber || "—"} />
+                    <Field label="Incorporation #" value={data.corporateIncorporationNumber || "—"} />
+                  </>
+                )}
               </div>
               <div>
                 {data.beneficiaries.filter((b) => b.name).length > 0 ? (
@@ -219,7 +321,7 @@ export default function HandoffPackage() {
                     <Field label="Disclosure Acknowledged" value={data.replacementDisclosureAcknowledged ? "Yes" : "No"} />
                   </div>
                 )}
-                {(data.sourceOfFunds === "1035 Exchange" || data.sourceOfFunds === "401k Rollover") && (
+                {(data.sourceOfFunds === "Policy Transfer/Exchange" || data.sourceOfFunds === "RRSP Withdrawal" || data.sourceOfFunds === "TFSA Withdrawal") && (
                   <div className="mt-3">
                     <Field label="Existing Policy Details" value={data.existingPolicyDetails || "—"} />
                     <Field label="Existing Account Number" value={data.existingAccountNumber || "—"} />
@@ -240,12 +342,18 @@ export default function HandoffPackage() {
             <div className="mt-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(218,18%,45%)]">Outstanding Items</p>
               <ul className="space-y-1 text-sm text-[hsl(216,55%,10%)]">
-                {Object.keys(data.riskAnswers).length < 5 && <li>• Complete risk assessment questionnaire</li>}
+                {Object.keys(data.riskAnswers).length < 5 && <li>• Complete risk assessment questionnaire ({Object.keys(data.riskAnswers).length}/5 answered)</li>}
                 {!data.selectedCarrier && <li>• Finalize carrier and product selection</li>}
+                {!data.faceAmountRequested && <li>• Specify face amount requested</li>}
                 {data.beneficiaries.filter((b) => b.name).length === 0 && <li>• Add beneficiary information</li>}
                 {!data.sourceOfFunds && <li>• Document source of funds</li>}
-                {Object.keys(data.riskAnswers).length === 5 && data.selectedCarrier && data.beneficiaries.filter((b) => b.name).length > 0 && data.sourceOfFunds && (
-                  <li>• All documentation complete — ready for submission</li>
+                {data.productCategory === "IFA" && !data.taxCounselName && <li>• Name tax counsel and confirm NCPI deductibility</li>}
+                {data.productCategory === "IFA" && !data.ifaRiskAcknowledged && <li>• Obtain IFA risk acknowledgment</li>}
+                {data.productCategory === "IFA" && data.ownerType === "Corporate" && data.uboDeclarations.length === 0 && <li>• Complete FINTRAC UBO declarations</li>}
+                {(data.productCategory === "Participating Whole Life" || data.productCategory === "IFA") && !data.illustrationAcknowledged && <li>• Review illustration with client and obtain acknowledgment</li>}
+                {data.productCategory === "Universal Life" && !data.exemptTestAcknowledged && <li>• Review UL exempt test with client and obtain acknowledgment</li>}
+                {Object.keys(data.riskAnswers).length === 5 && data.selectedCarrier && data.beneficiaries.filter((b) => b.name).length > 0 && data.sourceOfFunds && data.faceAmountRequested && (
+                  <li>• Core documentation complete — verify product-specific items above</li>
                 )}
               </ul>
             </div>

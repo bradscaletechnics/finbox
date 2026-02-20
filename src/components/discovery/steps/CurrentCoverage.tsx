@@ -1,7 +1,30 @@
-import { useDiscovery, ExistingPolicy, ExistingAnnuity } from "../DiscoveryContext";
+import { useDiscovery, ExistingPolicy } from "../DiscoveryContext";
 import { Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const inputClass = "w-full rounded-button border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
+
+function YesNoButtons({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex gap-2">
+      {["Yes", "No"].map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onChange(opt)}
+          className={cn(
+            "rounded-button px-5 py-2 text-sm font-medium border transition-colors",
+            value === opt
+              ? "border-primary bg-primary/15 text-primary"
+              : "border-border text-muted-foreground hover:border-primary/50"
+          )}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function CurrentCoverage() {
   const { data, updateData } = useDiscovery();
@@ -16,21 +39,11 @@ export function CurrentCoverage() {
     updateData({ existingPolicies: data.existingPolicies.map((p, idx) => (idx === i ? { ...p, ...updates } : p)) });
   };
 
-  const addAnnuity = () => {
-    updateData({ existingAnnuities: [...data.existingAnnuities, { carrier: "", productType: "", currentValue: "", surrenderDate: "" }] });
-  };
-  const removeAnnuity = (i: number) => {
-    updateData({ existingAnnuities: data.existingAnnuities.filter((_, idx) => idx !== i) });
-  };
-  const updateAnnuity = (i: number, updates: Partial<ExistingAnnuity>) => {
-    updateData({ existingAnnuities: data.existingAnnuities.map((a, idx) => (idx === i ? { ...a, ...updates } : a)) });
-  };
-
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-lg font-semibold text-foreground">Current Coverage</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Document existing life insurance and annuity coverage.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Document existing life insurance coverage and insurance history.</p>
       </div>
 
       {/* Existing Life Insurance */}
@@ -60,52 +73,12 @@ export function CurrentCoverage() {
                 {data.existingPolicies.map((p, i) => (
                   <tr key={i} className="border-b border-border/50 last:border-0">
                     <td className="px-2 py-2"><input className={inputClass} placeholder="Carrier" value={p.carrier} onChange={(e) => updatePolicy(i, { carrier: e.target.value })} /></td>
-                    <td className="px-2 py-2"><input className={inputClass} placeholder="IUL, Term, etc." value={p.productType} onChange={(e) => updatePolicy(i, { productType: e.target.value })} /></td>
+                    <td className="px-2 py-2"><input className={inputClass} placeholder="Whole Life, Term, UL…" value={p.productType} onChange={(e) => updatePolicy(i, { productType: e.target.value })} /></td>
                     <td className="px-2 py-2"><input className={`${inputClass} font-mono`} placeholder="$500,000" value={p.faceAmount} onChange={(e) => updatePolicy(i, { faceAmount: e.target.value })} /></td>
                     <td className="px-2 py-2"><input className={`${inputClass} font-mono`} placeholder="$3,600" value={p.annualPremium} onChange={(e) => updatePolicy(i, { annualPremium: e.target.value })} /></td>
                     <td className="px-2 py-2"><input className={inputClass} placeholder="2018" value={p.yearIssued} onChange={(e) => updatePolicy(i, { yearIssued: e.target.value })} /></td>
                     <td className="px-2 py-2">
                       <button onClick={() => removePolicy(i)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Existing Annuities */}
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">Existing Annuities</h3>
-          <button onClick={addAnnuity} className="flex items-center gap-1.5 rounded-button border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors">
-            <Plus className="h-3.5 w-3.5" /> Add Annuity
-          </button>
-        </div>
-        {data.existingAnnuities.length === 0 ? (
-          <p className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">No existing annuities. Click "Add Annuity" to add one.</p>
-        ) : (
-          <div className="overflow-x-auto rounded-card border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="px-3 py-2 text-xs font-medium uppercase text-muted-foreground">Carrier</th>
-                  <th className="px-3 py-2 text-xs font-medium uppercase text-muted-foreground">Product Type</th>
-                  <th className="px-3 py-2 text-xs font-medium uppercase text-muted-foreground">Current Value</th>
-                  <th className="px-3 py-2 text-xs font-medium uppercase text-muted-foreground">Surrender Date</th>
-                  <th className="px-3 py-2 w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.existingAnnuities.map((a, i) => (
-                  <tr key={i} className="border-b border-border/50 last:border-0">
-                    <td className="px-2 py-2"><input className={inputClass} placeholder="Carrier" value={a.carrier} onChange={(e) => updateAnnuity(i, { carrier: e.target.value })} /></td>
-                    <td className="px-2 py-2"><input className={inputClass} placeholder="IFA, VA, etc." value={a.productType} onChange={(e) => updateAnnuity(i, { productType: e.target.value })} /></td>
-                    <td className="px-2 py-2"><input className={`${inputClass} font-mono`} placeholder="$250,000" value={a.currentValue} onChange={(e) => updateAnnuity(i, { currentValue: e.target.value })} /></td>
-                    <td className="px-2 py-2"><input className={inputClass} placeholder="2028-06-15" value={a.surrenderDate} onChange={(e) => updateAnnuity(i, { surrenderDate: e.target.value })} /></td>
-                    <td className="px-2 py-2">
-                      <button onClick={() => removeAnnuity(i)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></button>
                     </td>
                   </tr>
                 ))}
@@ -137,6 +110,30 @@ export function CurrentCoverage() {
             <span className="text-sm text-muted-foreground">Client acknowledges replacement disclosure</span>
           </label>
         )}
+      </div>
+
+      {/* Insurance History */}
+      <div className="space-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Insurance History</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Required for all applications. Must be disclosed to the carrier.</p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm text-foreground">
+              Has any application for life, disability, critical illness, or long-term care insurance ever been declined, rated, postponed, offered with restrictions, cancelled, or modified in any way?
+            </label>
+            <YesNoButtons value={data.applicationEverDeclined} onChange={(v) => updateData({ applicationEverDeclined: v })} />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm text-foreground">
+              Is there an application for life, disability, critical illness, or long-term care insurance currently pending or contemplated with any other insurance company?
+            </label>
+            <YesNoButtons value={data.pendingApplicationElsewhere} onChange={(v) => updateData({ pendingApplicationElsewhere: v })} />
+          </div>
+        </div>
       </div>
     </div>
   );
